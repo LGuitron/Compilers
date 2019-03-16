@@ -1,3 +1,5 @@
 int perro;
 int hola;
+int array[3];
+int function (void)
 int array[6];

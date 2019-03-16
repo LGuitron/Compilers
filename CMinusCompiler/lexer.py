@@ -14,6 +14,10 @@ def globales(prog, pos, long):
     lexer = lex.lex()
     lexer.input(programa)
 
+# Function to return lexer object from lex to the parser
+def getLexerObject():
+    return globals()['lexer']
+
 def getToken(imprime = True):
 
     lexer   = globals()['lexer']
@@ -65,4 +69,3 @@ def errorRecovery(lexer, tok, type_up):
     else:
         print(" " * (error_position-1) , "^")
     print("--------------------------------------------------------------------")
-    
