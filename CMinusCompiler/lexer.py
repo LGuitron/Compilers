@@ -20,6 +20,12 @@ def getToken(imprime = True):
     tok     = lexer.token()
     type_up = tok.type.upper()
 
+    # Skip commentaries
+    while type_up == "COMMENT":
+        tok     = lexer.token()
+        type_up = tok.type.upper()
+
+
     if imprime and type_up != "ERROR":
         print ("(" , TokenType[type_up], " , " , tok.value, ")")
     
