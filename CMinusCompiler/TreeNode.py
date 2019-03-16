@@ -15,7 +15,4 @@ class TreeNode:
         ret_string = "\t"*indent + self.value + "\n"
         for child in self.children:
             ret_string += child.nodeString(indent+1)
-            
         return ret_string
-    
-

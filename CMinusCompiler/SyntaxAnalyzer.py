@@ -19,8 +19,8 @@ class SyntaxAnalyzer:
         while (token != TokenType.ENDFILE):
             token, tokenString = getToken(False)     
             self.tokens.append((token, tokenString))
-        
-    
+
+
     def program(self):
         return self.declaration_list()
 
@@ -37,13 +37,14 @@ class SyntaxAnalyzer:
 
     def declaration(self):
         
+        declaration = self.var_declaration()
+
+        # Try with function declaration and reset position of checked token
+        if declaration is None:
+            self.current_token = self.saved_token
+            declaration        = self.fun_declaration()
         
-        #self.current_token += 1
-        #return self.tokens[self.current_token-1][1]
-        
-        
-        # TODO fun-declaration
-        return self.var_declaration()
+        return declaration
     
     def var_declaration(self):
         
@@ -52,26 +53,70 @@ class SyntaxAnalyzer:
         
         # Check for type specifier
         if type_spec is not None:
-            node.addChild(type_spec)
+            node.addChild(TreeNode(type_spec))
             
             # Check for identifier
-            if self.tokens[self.current_token][0] == TokenType.ID:
-                identifier = self.tokens[self.current_token][1]
-                node.addChild(TreeNode(identifier))
-                self.current_token += 1
+            matched_identifier = self.match([TokenType.ID])
+            if matched_identifier is not None:
+                node.addChild(TreeNode(matched_identifier[1]))
 
+
+                # Check for optional array declaration [ NUM ]
+                if self.match([TokenType.LBRACKET]) is not None:
+                    matched_number = self.match([TokenType.NUM])
+                    if matched_number is not None and self.match([TokenType.RBRACKET]) is not None:
+                        node.addChild(TreeNode("[" + str(matched_number[1]) + "]"))
+                    
+                    # TODO Error recovery for bad array declaration
+                    else:
+                        return None
+                    
                 # Check for semicolon
-                if self.tokens[self.current_token][0] == TokenType.SEMICOLON:
-                    self.current_token += 1
+                if self.match([TokenType.SEMICOLON]) is not None:
                     return node
+
         return None
+    
+    # TODO finish this
+    def fun_declaration(self):
+        
+        node = TreeNode("fun_declaration")
+        type_spec = self.type_specifier()
+
+        # type-specifier ID \( params \) compound-stmt
+
+        # Check for type specifier
+        if type_spec is not None:
+            node.addChild(type_spec)
             
-            
+        return None
+        
+        
+        pass
+    
+    
     def type_specifier(self):
-        if self.tokens[self.current_token][0] == TokenType.INT or self.tokens[self.current_token][0] == TokenType.VOID:
-            type_spec = self.tokens[self.current_token][1]
-            self.current_token += 1
-            return TreeNode(type_spec)
+        matched_token = self.match([TokenType.INT, TokenType.VOID])
+        if matched_token is not None:
+            return matched_token[1]
+        return None    
+
+
+    '''
+    
+    Helper function for matching tokens
+    
+    '''
+    # Check if the next lexer token matches any of the production_tokens specified if a match was found increase value of current token by 1
+    # Returns:
+    # (token, tokenString) tuple if there was a match
+    # None otherwise
+    def match(self, production_tokens):
+        
+        for production_token in production_tokens:
+            if self.tokens[self.current_token][0] == production_token:
+                self.current_token += 1
+                return self.tokens[self.current_token-1]
         return None
         
             
