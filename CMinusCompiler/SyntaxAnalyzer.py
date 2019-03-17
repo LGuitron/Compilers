@@ -239,9 +239,9 @@ class SyntaxAnalyzer:
             
             
             # Check for statement_list
-            #stmt_list = self.statement_list()
-            #if stmt_list is not None:
-            #    node.addChild(stmt_list)
+            stmt_list = self.statement_list()
+            if stmt_list is not None:
+                node.addChild(stmt_list)
             
             # Check for right key
             if self.match([TokenType.RKEY]) is not None:
@@ -293,20 +293,198 @@ class SyntaxAnalyzer:
         
 
             
-    
+    # TODO check optional expression grammar
     '''
-    14. expression_stmt -> 
+    14. expression_stmt -> [expression] ;
     '''
     def expression_stmt(self):
-        pass
+
         # Check for optional expression
-        #new_expression = self.expression()
+        new_expression = self.expression()
         
         # Check for semicolon
-        #if self.match([TokenType.SEMICOLON]):
+        if new_expression is not None and self.match([TokenType.SEMICOLON]) is not None:
+            return new_expression
+        return None
+
+    '''
+    18. expression -> {var =} simple expression
+    '''
+    def expression(self):
+        
+        node = None
             
+        # Look for optional var assignments, token position is saved before looking for more vars
+        saved_token = self.current_token
+        new_var = self.var()
+        
+        if new_var is not None:
+            node = TreeNode("=")
+        
+        
+        while new_var is not None:
+            
+            # Look for equals sign after this var
+            if self.match([TokenType.EQUALS]):
+                node.addChild(new_var)
+                saved_token = self.current_token
+                new_var = self.var()
+            else:
+                return None
+            
+        # When we stopped finding vars restore current token
+        self.current_token = saved_token
+        
+        # Check for simple_expression
+        simple_expr = self.simple_expression()
+        if simple_expr is not None:
+            
+            # Check wheter to add a child node or create a new node
+            if node is None:
+                return simple_expr
+            else:
+                node.addChild(simple_expr)
+                return node
+            
+        else:
+            return None
+
+    '''
+    19. var -> ID [ \[ expression \] ]
+    '''
+    def var(self):
+        
+        node = TreeNode("var")
+        matched_identifier = self.match([TokenType.ID])
+        if matched_identifier is not None:
+            node.addChild(TreeNode(matched_identifier[1]))
+            
+            
+            # Check for optional expression in array syntax
+            if self.match([TokenType.LBRACKET]) is not None:
+                
+                new_expression = self.expression()
+                if new_expression is not None and self.match([TokenType.RBRACKET]) is not None:
+                    print(new_expression)
+                    node.addChild(new_expression)
+                    return node
+
+            else:
+                return node
+        return None
+
+    '''
+    20. simple_expression -> additive_expression [relop additive_expression]
+    '''
+    def simple_expression(self):
+        
+        # Check for first additive_expression
+        add_exp = self.additive_expression()
+        if add_exp is not None:
+        
+            node = TreeNode("simple_expression")
+            node.addChild(add_exp)
+        
+            # Look for optional additive_expressions
+            matched_operator = self.relop()
+            if matched_operator is not None:
+                
+                node.addChild(TreeNode(matched_operator))
+                add_exp = self.additive_expression()
+                if add_exp is not None:
+                    node.addChild(add_exp)
+                    return node
+                else:
+                    return None
+                
+            else:
+                return node
+
+        return None
+    
+    '''
+    21. relop -> <= | < | > | >= | == | !=
+    '''
+    def relop(self):
+        matched_token = self.match([TokenType.LT, TokenType.LE,TokenType.GT, TokenType.GE, TokenType.EQ, TokenType.NE ])
+        if matched_token is not None:
+            return matched_token[1]
+        return None   
     
     
+    # TODO finish this
+    '''
+    22. additive_expression -> term {addop term}
+    '''
+    def additive_expression(self):
+        
+        # OLD
+        # Check for first term
+        #return self.term()
+        
+        # Check for first term
+        term = self.term()
+        if term is not None:
+        
+            node = TreeNode("additive_expression")
+            node.addChild(term)
+            
+            matched_operator = self.addop()
+            while matched_operator is not None:
+                
+                #print("S")
+                
+                node.addChild(TreeNode(matched_operator))
+                term = self.term()
+                if term is not None:
+                    node.addChild(term)
+                    matched_operator = self.addop()
+                else:
+                    return None
+
+            return node
+        return None
+        
+        
+        
+        
+        
+    
+    '''
+    23. addop -> + | -
+    '''
+    def addop(self):
+        matched_token = self.match([TokenType.PLUS, TokenType.MINUS])
+        if matched_token is not None:
+            return matched_token[1]
+        return None 
+    
+    # TODO finish this
+    '''
+    24. term -> factor {mulop factor}
+    '''
+    def term(self):
+        return self.factor()
+    
+    '''
+    25. mulop -> * | /
+    '''
+    def mulop(self):
+        matched_token = self.match([TokenType.TIMES, TokenType.DIVIDE])
+        if matched_token is not None:
+            return matched_token[1]
+        return None 
+    
+    # TODO finish this
+    '''
+    26. factor -> (expression) | var | call | NUM
+    '''
+    def factor(self):
+
+        matched_num = self.match([TokenType.NUM])
+        if matched_num is not None:
+            return TreeNode(str(matched_num[1]))
+        return
     
     
     '''
