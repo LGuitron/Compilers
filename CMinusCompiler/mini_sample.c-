@@ -1,5 +1,3 @@
 int perro;
-int hola;
-int array[3];
+int array[2];
 int function (void)
-int array[6];

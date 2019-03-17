@@ -25,6 +25,8 @@ class SyntaxAnalyzer:
         # Add all tokens to the array
         token, tokenString = getToken(False)
         self.tokens.append((token, tokenString))
+        self.line_numbers.append(lexer.__dict__['lineno'])
+        self.token_positions.append(lexer.__dict__['lexpos'])
         while (token != TokenType.ENDFILE):
             token, tokenString = getToken(False)
             self.line_numbers.append(lexer.__dict__['lineno'])
@@ -53,7 +55,6 @@ class SyntaxAnalyzer:
         AST = TreeNode("declaration_list")
         AST.addChild(self.declaration())
         while self.current_token < len(self.tokens) - 1:
-            #print(self.current_token)
             AST.addChild(self.declaration())
         
         if not self.parse_error:
@@ -73,6 +74,10 @@ class SyntaxAnalyzer:
         if declaration is None:
             self.current_token = self.saved_token
             declaration        = self.fun_declaration()
+        
+        
+        if declaration is None:
+            self.errorRecovery()
         
         return declaration
     
@@ -99,13 +104,13 @@ class SyntaxAnalyzer:
                     matched_number = self.match([TokenType.NUM])
                     if matched_number is not None and self.match([TokenType.RBRACKET]) is not None:
                         node.addChild(TreeNode("[" + str(matched_number[1]) + "]"))
-                    
-                    # TODO Error recovery for bad array declaration
-                    else:
-                        self.errorRecovery("ERROR de sintaxis al declarar un arreglo")
-                    
+                        
+                        # Check for semicolon
+                        if self.match([TokenType.SEMICOLON]) is not None:
+                            return node
+                        
                 # Check for semicolon
-                if self.match([TokenType.SEMICOLON]) is not None:
+                elif self.match([TokenType.SEMICOLON]) is not None:
                     return node
 
         return None
@@ -160,7 +165,6 @@ class SyntaxAnalyzer:
         if matched_params is not None:
             node.addChild(TreeNode(matched_params[1]))
             return node
-        
         return None
     
     
@@ -175,7 +179,6 @@ class SyntaxAnalyzer:
     # (token, tokenString) tuple if there was a match
     # None otherwise
     def match(self, production_tokens):
-        
         for production_token in production_tokens:
             if self.tokens[self.current_token][0] == production_token:
                 self.current_token += 1
@@ -190,9 +193,9 @@ class SyntaxAnalyzer:
     '''
     def errorRecovery(self, errorMessage = "ERROR de sintaxis"):
         
-        self.parse_error = True
-        error_pos         = self.token_positions[self.current_token-2]
-        error_line_number = self.line_numbers[self.current_token-2]
+        self.parse_error  = True
+        error_pos         = self.token_positions[self.current_token-1]
+        error_line_number = self.line_numbers[self.current_token-1]
         
         
         print("--------------------------------------------------------------------")
@@ -219,5 +222,13 @@ class SyntaxAnalyzer:
         else:
             print(" " * (error_position-1) , "^")
         print("--------------------------------------------------------------------")
+        
+        # Skip all the next tokens until a new line is reached   
         self.current_token += 1
+        while self.current_token < len(self.line_numbers) and self.line_numbers[self.current_token] == error_line_number:
+            self.current_token += 1
+        
+        # End program if token array is finished
+        if self.current_token >= len(self.tokens):
+            exit()
         self.saved_token = self.current_token
