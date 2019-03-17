@@ -1,3 +1,5 @@
-int perro;
-int array[2];
-int function (void)
+int func (int b[], int c) 
+{
+    int local;
+    int another[4];
+}
