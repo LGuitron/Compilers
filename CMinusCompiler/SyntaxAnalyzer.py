@@ -17,7 +17,7 @@ class SyntaxAnalyzer:
         self.parse_error = False         # Variable to check if there was a parser error
         
         self.current_token   = 0      # Current index to be seen in the list of tokens
-        self.saved_token     = 0      # Saved index to be used for backtracking
+        self.error_token     = 0      # Save position of latest token seen for identifying error positions
         self.tokens          = []     # Array storing all tokens seen
         self.line_numbers    = []     # Array of line numbers for each token seen
         self.token_positions = []     # Array storing position of all tokens in the source code
@@ -56,7 +56,7 @@ class SyntaxAnalyzer:
         AST.addChild(self.declaration())
         while self.current_token < len(self.tokens) - 1:
             AST.addChild(self.declaration())
-        
+            
         if not self.parse_error:
             return AST
         return None
@@ -67,18 +67,20 @@ class SyntaxAnalyzer:
     def declaration(self):
         
         
-        self.saved_token = self.current_token
+        saved_token = self.current_token
         declaration = self.var_declaration()
 
         # Try with function declaration and reset position of checked token
         if declaration is None:
-            self.current_token = self.saved_token
+            error_token   = self.current_token
+            self.current_token = saved_token
             declaration        = self.fun_declaration()
         
-        
-        if declaration is None:
-            self.errorRecovery()
-        
+            # ERROR, the declaration was unsuccesful
+            if declaration is None:
+                self.current_token = max(error_token, self.current_token)
+                self.errorRecovery()
+                return None
         return declaration
     
     '''
@@ -112,7 +114,6 @@ class SyntaxAnalyzer:
                 # Check for semicolon
                 elif self.match([TokenType.SEMICOLON]) is not None:
                     return node
-
         return None
     
     '''
@@ -160,13 +161,13 @@ class SyntaxAnalyzer:
     def params(self):
 
         # Check for param_list
-        self.saved_token = self.current_token
+        saved_token = self.current_token
         params_node = self.param_list()
         if params_node is not None:
             return params_node
         
         # Check for void parameters
-        self.current_token = self.saved_token
+        self.current_token = saved_token
         matched_params = self.match([TokenType.VOID])
         if matched_params is not None:
             params_node = TreeNode("param")
@@ -262,8 +263,7 @@ class SyntaxAnalyzer:
             
         while new_var is not None:
             node.addChild(new_var)
-            new_var = self.var_declaration()
-        
+            new_var = self.var_declaration()            
         return node
     
     '''
@@ -418,10 +418,6 @@ class SyntaxAnalyzer:
     '''
     def additive_expression(self):
         
-        # OLD
-        # Check for first term
-        #return self.term()
-        
         # Check for first term
         term = self.term()
         if term is not None:
@@ -431,9 +427,6 @@ class SyntaxAnalyzer:
             
             matched_operator = self.addop()
             while matched_operator is not None:
-                
-                #print("S")
-                
                 node.addChild(TreeNode(matched_operator))
                 term = self.term()
                 if term is not None:
@@ -444,11 +437,7 @@ class SyntaxAnalyzer:
 
             return node
         return None
-        
-        
-        
-        
-        
+
     
     '''
     23. addop -> + | -
@@ -510,11 +499,9 @@ class SyntaxAnalyzer:
     
     '''
     def errorRecovery(self, errorMessage = "ERROR de sintaxis"):
-        
         self.parse_error  = True
         error_pos         = self.token_positions[self.current_token-1]
         error_line_number = self.line_numbers[self.current_token-1]
-        
         
         print("--------------------------------------------------------------------")
         print("Linea ", error_line_number, ": ", errorMessage)
@@ -522,6 +509,12 @@ class SyntaxAnalyzer:
         
         # Get position of the conflicting character in the current line
         current_position = error_pos
+        
+        # Go back until the last character is not a \n
+        while self.lex_data[current_position] == "\n" and current_position > 0:
+            current_position -= 1
+        
+        # Go back until the last character is a \n
         while self.lex_data[current_position] != "\n" and current_position > 0:
             current_position -= 1
 
@@ -540,13 +533,40 @@ class SyntaxAnalyzer:
         else:
             print(" " * (error_position-1) , "^")
         print("--------------------------------------------------------------------")
+
         
-        # Skip all the next tokens until a new line is reached   
-        self.current_token += 1
-        while self.current_token < len(self.line_numbers) and self.line_numbers[self.current_token] == error_line_number:
+        '''
+        Attempt to get out of the current function (if in a function)
+        '''
+        temp_token = self.current_token
+        
+        
+        # Skip all the next tokens until a } is reached
+        temp_token += 1
+        while temp_token < len(self.line_numbers) and self.tokens[temp_token][0] != TokenType.RKEY:
+            temp_token += 1
+         
+        # Skip all the next tokens until a token different than a } is reached
+        while temp_token < len(self.line_numbers) and self.tokens[temp_token][0] == TokenType.RKEY:
+            temp_token += 1
+
+
+        '''
+        If there is no } key attempt to get out of statement (look for semicolon)
+        '''
+        if temp_token >= len(self.tokens):
+        
             self.current_token += 1
-        
+            while self.current_token < len(self.line_numbers) and self.tokens[self.current_token][0] != TokenType.SEMICOLON:
+                self.current_token += 1
+            
+            # Skip all the next tokens until a token different than a semicolon is reached
+            while self.current_token < len(self.line_numbers) and self.tokens[self.current_token][0] == TokenType.SEMICOLON:
+                self.current_token += 1
+
+        else:
+            self.current_token = temp_token
+
         # End program if token array is finished
-        if self.current_token >= len(self.tokens):
-            exit()
-        self.saved_token = self.current_token
+        #if self.current_token >= len(self.tokens):
+        #    exit()
