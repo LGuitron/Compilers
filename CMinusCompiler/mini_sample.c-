@@ -1,26 +1,26 @@
+int b;
+int c;
+int d[1];
+
 int func (int b[], int c) 
 {
-    /*int a[1];
+    int a[1];
     int a;
     int b;
     int d;
 
-    a = myFunc();
 
     while (a==b)
     {
-        d = 2;
-        if(2==1)
+        d = c = d+1;
+        /*if(2==1)
         {
             if(3==4)
             {
                 a=2;
             }
-        }
+        }*/
     }
+    
     return;
-    return a+b;*/
-    
-    
-    a = 5+(3-4)*2;
 }

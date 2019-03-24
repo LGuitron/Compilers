@@ -89,12 +89,14 @@ class SyntaxAnalyzer:
     '''
     def var_declaration(self):
         
-        node = TreeNode("var_declaration")
+        #node = TreeNode("var_declaration")
         type_spec = self.type_specifier()
         
         # Check for type specifier
         if type_spec is not None:
-            node.addChild(TreeNode(type_spec))
+            
+            node = TreeNode(type_spec)
+            #node.addChild(TreeNode(type_spec))
             
             # Check for identifier
             matched_identifier = self.match([TokenType.ID])
@@ -106,7 +108,10 @@ class SyntaxAnalyzer:
                 if self.match([TokenType.LBRACKET]) is not None:
                     matched_number = self.match([TokenType.NUM])
                     if matched_number is not None and self.match([TokenType.RBRACKET]) is not None:
-                        node.addChild(TreeNode("[" + str(matched_number[1]) + "]"))
+                        
+                        node.addChild(TreeNode(str(matched_number[1])))
+                        #node = TreeNode(type_spec + "[" + str(matched_number[1]) + "]"))
+                        #node.addChild(TreeNode("[" + str(matched_number[1]) + "]"))
                         
                         # Check for semicolon
                         if self.match([TokenType.SEMICOLON]) is not None:
@@ -152,7 +157,9 @@ class SyntaxAnalyzer:
                         # Check for function compound statement
                         compound_statement = self.compound_stmt()
                         if compound_statement is not None:
-                            node.addChild(compound_statement)
+                            
+                            for child in compound_statement:
+                                node.addChild(child)
                             return node
         return None
 
@@ -206,52 +213,64 @@ class SyntaxAnalyzer:
     '''
     def param(self):
         
-        node = TreeNode("param")
+        #node = TreeNode("param")
         type_spec = self.type_specifier()
         
         # Check for type specifier
         if type_spec is not None:
-            node.addChild(TreeNode(type_spec))
+            #node.addChild(TreeNode(type_spec))
             
             # Check for identifier
             matched_identifier = self.match([TokenType.ID])
             if matched_identifier is not None:
-                node.addChild(TreeNode(matched_identifier[1]))
+                #node.addChild(TreeNode(matched_identifier[1]))
                 
                 # Check for optional array declaration []
                 if self.match([TokenType.LBRACKET]) is not None and self.match([TokenType.RBRACKET]) is not None:
-                    node.addChild(TreeNode("[]"))
-                    return node
+                    node = TreeNode(type_spec + "[]")
+                    node.addChild(TreeNode(matched_identifier[1]))
+                    
+                    
+                    #node.addChild(TreeNode("[]"))
+                    #return node
                         
                 # Return node
                 else:
-                    return node
+                    node = TreeNode(type_spec)
+                    node.addChild(TreeNode(matched_identifier[1]))
+                    #return node
+                return node
         return None
 
     '''
     10. compound_stmt -> \{ local-declarations statement-list \}
     '''
     def compound_stmt(self):
-        
-        node = TreeNode("compound_statement")
+
+        # Declare array of children for the compound statement
+        nodes = None
         
         # Check for left key
         if self.match([TokenType.LKEY]) is not None:
             
+            nodes = []
+            
             # Check for local_declarations
             local_vars = self.local_declarations()
             if local_vars is not None:
-                node.addChild(local_vars)
+                nodes.append(local_vars)
             
             
             # Check for statement_list
             stmt_list = self.statement_list()
             if stmt_list is not None:
-                node.addChild(stmt_list)
-            
+                #node.addChild(stmt_list)
+                nodes.append(stmt_list)
+                
             # Check for right key
             if self.match([TokenType.RKEY]) is not None:
-                return node
+                #return node
+                return nodes
         
         return None
     
@@ -356,14 +375,25 @@ class SyntaxAnalyzer:
                     node.addChild(new_expression)
                     if_statement = self.compound_stmt()
                     if if_statement is not None:
-                        node.addChild(if_statement)
+                        
+                        # Add all nodes that are children of the compound_stmt as children of the if node
+                        for child in if_statement:
+                            node.addChild(child)
+                        
+                        
+                        #node.addChild(if_statement)
                     
                         # Check for optional else clause
                         if self.match([TokenType.ELSE]) is not None:
                             else_statement = self.compound_stmt()
                             
                             if else_statement is not None:
-                                node.addChild(else_statement)
+                                
+                                # Add all nodes that are children of the compound_stmt as children of the if node
+                                for child in else_statement:
+                                    node.addChild(child)
+                                
+                                #node.addChild(else_statement)
                         
                             # Error, expected an expression here after seeing else
                             else:
@@ -389,7 +419,10 @@ class SyntaxAnalyzer:
                     node.addChild(new_expression)
                     while_statement = self.compound_stmt()
                     if while_statement is not None:
-                        node.addChild(while_statement)
+                        
+                        # Add all nodes that are children of the compound_stmt as children of the while node
+                        for child in while_statement:
+                            node.addChild(child)
                         return node
         return None
     
@@ -427,15 +460,16 @@ class SyntaxAnalyzer:
         # Look for optional var assignments, token position is saved before looking for more vars
         saved_token = self.current_token
         new_var = self.var()
-        
-        if new_var is not None:
-            node = TreeNode("=")
-        
-        
+
         while new_var is not None:
             
             # Look for equals sign after this var
             if self.match([TokenType.EQUALS]):
+                
+                # Create root node for equals operator if this is the first one seen
+                if node is None:
+                    node = TreeNode("=")
+                
                 node.addChild(new_var)
                 saved_token = self.current_token
                 new_var = self.var()
@@ -443,7 +477,6 @@ class SyntaxAnalyzer:
             # Break the loop (maybe this is a function call)
             else:
                 break
-
         self.current_token = saved_token
         
         # Check for simple_expression
@@ -464,19 +497,17 @@ class SyntaxAnalyzer:
     19. var -> ID [ \[ expression \] ]
     '''
     def var(self):
-        
-        node = TreeNode("var")
+
         matched_identifier = self.match([TokenType.ID])
         if matched_identifier is not None:
-            node.addChild(TreeNode(matched_identifier[1]))
             
-            
+            node = TreeNode(matched_identifier[1])
+
             # Check for optional expression in array syntax
             if self.match([TokenType.LBRACKET]) is not None:
                 
                 new_expression = self.expression()
                 if new_expression is not None and self.match([TokenType.RBRACKET]) is not None:
-                    print(new_expression)
                     node.addChild(new_expression)
                     return node
 
@@ -492,24 +523,28 @@ class SyntaxAnalyzer:
         # Check for first additive_expression
         add_exp = self.additive_expression()
         if add_exp is not None:
-        
-            node = TreeNode("simple_expression")
-            node.addChild(add_exp)
-        
-            # Look for optional additive_expressions
+
+            # Single additive expression
             matched_operator = self.relop()
-            if matched_operator is not None:
+            if matched_operator is None:
+                node = add_exp
+            
+            # Found relation operator, set it as the node and set its 2 children accordingly
+            else:
+                node = TreeNode(matched_operator)
+                node.addChild(add_exp)
                 
-                node.addChild(TreeNode(matched_operator))
+                #node.addChild(TreeNode(matched_operator))
                 add_exp = self.additive_expression()
+                
+                # Look for additive expression at right side
                 if add_exp is not None:
                     node.addChild(add_exp)
-                    return node
                 else:
                     return None
                 
-            else:
-                return node
+            #else:
+            return node
 
         return None
     
