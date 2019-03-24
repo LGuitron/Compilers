@@ -13,14 +13,19 @@ int func (int b[], int c)
     while (a==b)
     {
         d = c = d+1;
-        /*if(2==1)
+        if(2==1)
         {
-            if(3==4)
+            if(3>=4)
             {
                 a=2;
             }
-        }*/
+        }
     }
     
-    return;
+    return b*4;
+}
+
+int funcc(void)
+{
+    return 1;
 }
