@@ -21,6 +21,7 @@ class SyntaxAnalyzer:
         self.tokens          = []     # Array storing all tokens seen
         self.line_numbers    = []     # Array of line numbers for each token seen
         self.token_positions = []     # Array storing position of all tokens in the source code
+        self.key_balance     = 0      # Count extra amount of lkeys compared to rkeys for error recovery
         
         # Add all tokens to the array
         token, tokenString = getToken(False)
@@ -78,7 +79,7 @@ class SyntaxAnalyzer:
         
             # ERROR, the declaration was unsuccesful
             if declaration is None:
-                self.current_token = max(error_token, self.current_token)
+                self.current_token = max(error_token, self.current_token, self.error_token)
                 self.errorRecovery()
                 return None
         return declaration
@@ -160,11 +161,14 @@ class SyntaxAnalyzer:
     '''
     def params(self):
 
+        error_token = self.current_token
+
         # Check for param_list
         saved_token = self.current_token
         params_node = self.param_list()
         if params_node is not None:
             return params_node
+        error_token = max(error_token, self.current_token)
         
         # Check for void parameters
         self.current_token = saved_token
@@ -173,6 +177,7 @@ class SyntaxAnalyzer:
             params_node = TreeNode("param")
             params_node.addChild(TreeNode(matched_params[1]))
             return params_node
+        self.error_token = max(error_token, self.current_token, self.error_token)
         return None
     
     '''
@@ -263,7 +268,7 @@ class SyntaxAnalyzer:
             
         while new_var is not None:
             node.addChild(new_var)
-            new_var = self.var_declaration()            
+            new_var = self.var_declaration()      
         return node
     
     '''
@@ -286,14 +291,51 @@ class SyntaxAnalyzer:
     
     # TODO finish this
     '''
-    13. statement -> expression_stmt | compound_stmt | selection_stmt | iteration_stmt | return_stmt
+    13. statement -> expression_stmt | compound_statement |  selection_stmt | iteration_stmt | return_stmt
     '''
     def statement(self):
-        return self.expression_stmt()
         
+        saved_token = self.current_token
+        error_token = self.current_token
+        
+        # Check for expression_stmt
+        expr = self.expression_stmt()
+        if expr is not None:
+            return expr
+        error_token = max(error_token, self.current_token)
+        
+        # Check for expression_stmt
+        '''
+        expr = self.compound_stmt()
+        if expr is not None:
+            return expr
+        error_token = max(error_token, self.current_token)
+        '''
+        
+        # Check for selection_stmt
+        self.current_token = saved_token
+        expr = self.selection_stmt()
+        if expr is not None:
+            return expr
+        error_token = max(error_token, self.current_token)
+        
+        # Check for iteration_stmt
+        self.current_token = saved_token
+        expr = self.iteration_stmt()
+        if expr is not None:
+            return expr
+        error_token = max(error_token, self.current_token)
+    
+        # Check for return_stmt
+        self.current_token = saved_token
+        expr = self.return_stmt()
+        if expr is not None:
+            return expr
+        self.error_token = max(error_token, self.current_token, self.error_token)
+        
+        # Error detected, update value of current error to detect it properly 
+        return None
 
-            
-    # TODO check optional expression grammar
     '''
     14. expression_stmt -> [expression] ;
     '''
@@ -308,10 +350,88 @@ class SyntaxAnalyzer:
         return None
 
     '''
+    15. selection_stmt -> if (expression) compound_stmt [else compound_stmt]
+    '''
+    def selection_stmt(self):
+        
+        
+        # Check for if token
+        if self.match([TokenType.IF]) is not None:
+            node = TreeNode("if")
+            
+            # Check for (expression)
+            if self.match([TokenType.LPAREN]) is not None:
+                new_expression = self.expression()
+                if new_expression is not None and self.match([TokenType.RPAREN]) is not None:
+                    node.addChild(new_expression)
+                    if_statement = self.compound_stmt()
+                    if if_statement is not None:
+                        node.addChild(if_statement)
+                    
+                        # Check for optional else clause
+                        if self.match([TokenType.ELSE]) is not None:
+                            else_statement = self.compound_stmt()
+                            
+                            if else_statement is not None:
+                                node.addChild(else_statement)
+                        
+                            # Error, expected an expression here after seeing else
+                            else:
+                                return None
+                    
+                    return node
+        return None
+        
+
+    '''
+    16. iteration_stmt -> while (expression) compound_stmt
+    '''
+    def iteration_stmt(self):
+
+        # Check for while token
+        if self.match([TokenType.WHILE]) is not None:
+            node = TreeNode("while")
+            
+            # Check for (expression)
+            if self.match([TokenType.LPAREN]) is not None:
+                new_expression = self.expression()
+                if new_expression is not None and self.match([TokenType.RPAREN]) is not None:
+                    node.addChild(new_expression)
+                    while_statement = self.compound_stmt()
+                    if while_statement is not None:
+                        node.addChild(while_statement)
+                        return node
+        return None
+    
+
+    '''
+    17. return_stmt -> return [expression];
+    '''
+    def return_stmt(self):
+        
+        # Check for return token
+        if self.match([TokenType.RETURN]) is not None:
+            node = TreeNode("return")
+            
+            # Check for optional expression
+            saved_token = self.current_token
+            new_expression = self.expression()
+            if new_expression is not None:
+                node.addChild(new_expression)
+            
+            # If no expression was found restore the current token
+            else:
+                self.current_token = saved_token
+                
+            # Look for semicolon token
+            if self.match([TokenType.SEMICOLON]) is not None:
+                return node
+        return None
+
+    '''
     18. expression -> {var =} simple expression
     '''
     def expression(self):
-        
         node = None
             
         # Look for optional var assignments, token position is saved before looking for more vars
@@ -329,10 +449,11 @@ class SyntaxAnalyzer:
                 node.addChild(new_var)
                 saved_token = self.current_token
                 new_var = self.var()
+                
+            # Break the loop (maybe this is a function call)
             else:
-                return None
-            
-        # When we stopped finding vars restore current token
+                break
+
         self.current_token = saved_token
         
         # Check for simple_expression
@@ -377,7 +498,7 @@ class SyntaxAnalyzer:
     20. simple_expression -> additive_expression [relop additive_expression]
     '''
     def simple_expression(self):
-        
+
         # Check for first additive_expression
         add_exp = self.additive_expression()
         if add_exp is not None:
@@ -412,7 +533,7 @@ class SyntaxAnalyzer:
         return None   
     
     
-    # TODO finish this
+    # TODO simplify syntax tree
     '''
     22. additive_expression -> term {addop term}
     '''
@@ -424,7 +545,7 @@ class SyntaxAnalyzer:
         
             node = TreeNode("additive_expression")
             node.addChild(term)
-            
+        
             matched_operator = self.addop()
             while matched_operator is not None:
                 node.addChild(TreeNode(matched_operator))
@@ -448,12 +569,34 @@ class SyntaxAnalyzer:
             return matched_token[1]
         return None 
     
-    # TODO finish this
+
+    # TODO simplify syntax tree
     '''
     24. term -> factor {mulop factor}
     '''
     def term(self):
-        return self.factor()
+        factor = self.factor()
+    
+        if factor is not None:
+        
+            node = TreeNode("term")
+            node.addChild(factor)
+            matched_operator = self.mulop()
+            
+            # If there are no operation in this term make the value 
+            
+            while matched_operator is not None:
+                node.addChild(TreeNode(matched_operator))
+                factor = self.factor()
+                if factor is not None:
+                    node.addChild(factor)
+                    matched_operator = self.mulop()
+                else:
+                    return None
+
+            return node
+        return None
+    
     
     '''
     25. mulop -> * | /
@@ -463,17 +606,99 @@ class SyntaxAnalyzer:
         if matched_token is not None:
             return matched_token[1]
         return None 
-    
-    # TODO finish this
+
     '''
-    26. factor -> (expression) | var | call | NUM
+    26. factor -> NUM | (expression) | call | var
     '''
     def factor(self):
 
+        saved_token = self.current_token
+        error_token = self.current_token
+        
+        # Check for NUM
         matched_num = self.match([TokenType.NUM])
         if matched_num is not None:
             return TreeNode(str(matched_num[1]))
-        return
+        error_token = max(error_token, self.current_token)
+
+        # Check for ( expression )
+        if self.match([TokenType.LPAREN]) is not None:
+            factor = self.expression()
+            if factor is not None and self.match([TokenType.RPAREN]) is not None:
+                return factor
+        error_token = max(error_token, self.current_token)
+        
+        # check for call
+        self.current_token = saved_token
+        factor = self.call()
+        if factor is not None:
+            return factor
+        error_token = max(error_token, self.current_token)
+
+        # Check for var
+        self.current_token = saved_token
+        factor = self.var()
+        if factor is not None:
+            return factor
+        self.error_token = max(error_token, self.current_token, self.error_token)
+        return None
+    
+    '''
+    27. call -> ID (args)
+    '''
+    def call(self):
+        
+        matched_identifier = self.match([TokenType.ID]) 
+        if matched_identifier is not None:
+            node = TreeNode(matched_identifier[1])
+            if self.match([TokenType.LPAREN]) is not None:
+                arguments = self.args()
+                if arguments is not None and self.match([TokenType.RPAREN]) is not None:
+                    node.addChild(arguments)
+                    return node
+        return None
+    
+    
+    '''
+    28. args -> arg-list | epsilon
+    '''
+    def args(self):
+        
+        args = self.arg_list()
+        
+        # Check for arglist
+        saved_token = self.current_token
+        if args is not None:
+            return args
+
+        # Restore token and Return an empty TreeNode for epsilon
+        self.current_token = saved_token
+        node = TreeNode("args")
+        node.addChild(TreeNode("empty"))
+        return node
+    
+    '''
+    29. arg_list -> expression {, expression}
+    '''
+    def arg_list(self):
+        
+        node = TreeNode("args")
+        
+        # Look for first expression
+        new_expression = self.expression()
+        if new_expression is not None:
+
+            node.addChild(new_expression)
+        
+            # Look for additional expressions separated by commas
+            while self.match([TokenType.COMMA]) is not None:
+                new_expression = self.expression()
+                if new_expression is not None:
+                    node.addChild(new_expression)
+                else:
+                    return None
+            return node
+        return None
     
     
     '''
@@ -489,6 +714,13 @@ class SyntaxAnalyzer:
         for production_token in production_tokens:
             if self.tokens[self.current_token][0] == production_token:
                 self.current_token += 1
+                
+                # Change balance counter for keys when necessary
+                if production_token == TokenType.LKEY:
+                    self.key_balance += 1
+                elif production_token == TokenType.RKEY:
+                    self.key_balance -= 1
+                    self.key_balance = max(0, self.key_balance)
                 return self.tokens[self.current_token-1]
         return None
     
@@ -541,20 +773,18 @@ class SyntaxAnalyzer:
         temp_token = self.current_token
         
         
-        # Skip all the next tokens until a } is reached
+        # Skip all tokens until reaching a point were opening and closing keys { } are balanced
         temp_token += 1
-        while temp_token < len(self.line_numbers) and self.tokens[temp_token][0] != TokenType.RKEY:
+        for i in range(self.key_balance, 0, -1):
+            
+            while temp_token < len(self.line_numbers) and self.tokens[temp_token][0] != TokenType.RKEY:
+                temp_token += 1
             temp_token += 1
-         
-        # Skip all the next tokens until a token different than a } is reached
-        while temp_token < len(self.line_numbers) and self.tokens[temp_token][0] == TokenType.RKEY:
-            temp_token += 1
-
-
+        
         '''
-        If there is no } key attempt to get out of statement (look for semicolon)
+        If the key balance was already 0 attempt to get out of statement (look for semicolon)
         '''
-        if temp_token >= len(self.tokens):
+        if self.key_balance == 0:
         
             self.current_token += 1
             while self.current_token < len(self.line_numbers) and self.tokens[self.current_token][0] != TokenType.SEMICOLON:
@@ -566,7 +796,4 @@ class SyntaxAnalyzer:
 
         else:
             self.current_token = temp_token
-
-        # End program if token array is finished
-        #if self.current_token >= len(self.tokens):
-        #    exit()
+        self.key_balance = 0

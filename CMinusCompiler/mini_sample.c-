@@ -5,6 +5,19 @@ int func (int b[], int c)
     int b;
     int d;
 
-    a = 1+1;
-    b = 1==2;
+    a = myFunc();
+
+    while (a==b)
+    {
+        d = 2;
+        if(2==1)
+        {
+            if(3==4)
+            {
+                a=2;
+            }
+        }
+    }
+    return;
+    return a+b;
 }
