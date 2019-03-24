@@ -11,6 +11,6 @@ int gdc (int u, int v)
 void main(void)
 {
      int x; int y;
-     x = input(); y = input(1, 2);
+     x = input(); y = input();
      output(gcd(x,y));
 }

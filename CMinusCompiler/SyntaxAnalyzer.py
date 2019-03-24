@@ -545,8 +545,6 @@ class SyntaxAnalyzer:
             else:
                 node = TreeNode(matched_operator)
                 node.addChild(add_exp)
-                
-                #node.addChild(TreeNode(matched_operator))
                 add_exp = self.additive_expression()
                 
                 # Look for additive expression at right side
