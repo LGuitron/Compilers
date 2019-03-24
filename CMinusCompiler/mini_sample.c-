@@ -1,6 +1,6 @@
 int func (int b[], int c) 
 {
-    int a[1];
+    /*int a[1];
     int a;
     int b;
     int d;
@@ -19,5 +19,8 @@ int func (int b[], int c)
         }
     }
     return;
-    return a+b;
+    return a+b;*/
+    
+    
+    a = 5+(3-4)*2;
 }

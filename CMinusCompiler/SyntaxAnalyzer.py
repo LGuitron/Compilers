@@ -287,11 +287,9 @@ class SyntaxAnalyzer:
             new_stmt = self.statement()
         
         return node
-        
-    
-    # TODO finish this
+
     '''
-    13. statement -> expression_stmt | compound_statement |  selection_stmt | iteration_stmt | return_stmt
+    13. statement -> expression_stmt | selection_stmt | iteration_stmt | return_stmt
     '''
     def statement(self):
         
@@ -303,14 +301,6 @@ class SyntaxAnalyzer:
         if expr is not None:
             return expr
         error_token = max(error_token, self.current_token)
-        
-        # Check for expression_stmt
-        '''
-        expr = self.compound_stmt()
-        if expr is not None:
-            return expr
-        error_token = max(error_token, self.current_token)
-        '''
         
         # Check for selection_stmt
         self.current_token = saved_token
@@ -531,9 +521,7 @@ class SyntaxAnalyzer:
         if matched_token is not None:
             return matched_token[1]
         return None   
-    
-    
-    # TODO simplify syntax tree
+
     '''
     22. additive_expression -> term {addop term}
     '''
@@ -542,20 +530,33 @@ class SyntaxAnalyzer:
         # Check for first term
         term = self.term()
         if term is not None:
-        
-            node = TreeNode("additive_expression")
-            node.addChild(term)
-        
+            
             matched_operator = self.addop()
+            if matched_operator is None:
+                node = term
+            
+            # Set additive operator as the root
+            else:
+                node = TreeNode(matched_operator)
+                node.addChild(term)
+            
             while matched_operator is not None:
-                node.addChild(TreeNode(matched_operator))
+                
+                # Get the term on the right side of the operator
                 term = self.term()
                 if term is not None:
+                    
+                    # Add factor as right child of the current node
                     node.addChild(term)
+
+                    # Check if there is another operator to the right
                     matched_operator = self.addop()
+                    if matched_operator is not None:
+                        parentNode = TreeNode(matched_operator)  # New operator to the right becomes the parent of the current node
+                        parentNode.addChild(node)                # Add current node as left child of the new parent
+                        node = parentNode                        # Update current node as the parent of the last
                 else:
                     return None
-
             return node
         return None
 
@@ -568,9 +569,7 @@ class SyntaxAnalyzer:
         if matched_token is not None:
             return matched_token[1]
         return None 
-    
 
-    # TODO simplify syntax tree
     '''
     24. term -> factor {mulop factor}
     '''
@@ -578,22 +577,36 @@ class SyntaxAnalyzer:
         factor = self.factor()
     
         if factor is not None:
-        
-            node = TreeNode("term")
-            node.addChild(factor)
+
             matched_operator = self.mulop()
+        
+            # If there are no operations to the right return tha factor value as the node
+            if matched_operator is None:
+                node = factor
             
-            # If there are no operation in this term make the value 
+            # Set mult_operator as the root
+            else:
+                node = TreeNode(matched_operator)
+                node.addChild(factor)
             
+            #currentNode = node
             while matched_operator is not None:
-                node.addChild(TreeNode(matched_operator))
+
+                # Get the factor on the right side of the operator
                 factor = self.factor()
                 if factor is not None:
+                    
+                    # Add factor as right child of the current node
                     node.addChild(factor)
+
+                    # Check if there is another operator to the right
                     matched_operator = self.mulop()
+                    if matched_operator is not None:
+                        parentNode = TreeNode(matched_operator)  # New operator to the right becomes the parent of the current node
+                        parentNode.addChild(node)                # Add current node as left child of the new parent
+                        node = parentNode                        # Update current node as the parent of the last
                 else:
                     return None
-
             return node
         return None
     
