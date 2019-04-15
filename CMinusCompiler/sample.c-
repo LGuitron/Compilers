@@ -3,17 +3,25 @@ de Euclides para calcular mod. */
 
 int x [20];
 int a;
+int b [10];
 
 int gdc (int u, int v, int a [])
 {
-    if ( v == 0) {return u;}
-    else return gdc(v,u-u/v*v);
+    int e[10];
+    int f[10];
+    int g[10];
+    b[e[f[g[1]]]] = 2 + 3 / 4;
+    
+    
+    /*if ( v == 0) {return u;}
+    else return gdc(v,u-u/v*v);*/
     /* u-u/v*v == u mod v */
 }
 
-/*void main(void)
+
+void main(void)
 {
      int x; int y;
      x = input(); y = input();
      output(gcd(x,y));
-}*/
+}

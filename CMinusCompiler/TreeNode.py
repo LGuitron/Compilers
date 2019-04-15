@@ -1,8 +1,9 @@
 class TreeNode:
     
     def __init__(self, value):
-        self.value    = value
-        self.children = []
+        self.value          = value
+        self.children       = []
+        self.explored_child = 0         # Index of the child currently being explored
         
     def addChild(self, childNode):
         self.children.append(childNode)
