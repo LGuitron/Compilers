@@ -6,112 +6,86 @@ from copy import deepcopy
 SYMBOL TABLE FUNCTION
 '''
 def tabla(tree, imprime = True):
-    
+
     globalTable   = SymbolTable()                    # Start by initializing global symbol table
-    errorDetected = False                            # Boolean to determine if redeclaration errors occured
+    next_node_st(tree, globalTable)                  # Function for building symbol tables recursively
+    register_variables(tree, globalTable)            # Register global variables in global symbol table
+    return globalTable, False                        # TODO determine if a variable redeclaration error occured
+
+# Helper function for traversing for building symbol tables
+def next_node_st(node, current_symbol_table):
     
-    # Go through all of the children of the root node (either global variable declaration or function declaration)
-    for i in range (len(tree.children)):
+    #######################
+    #FUNCTION DECLARATION #
+    #######################
+    if node.value == "fun_declaration":
         
-        current_node  = tree.children[i]
-        property_dict = {}
-
-        '''
-        GLOBAL VARIABLE
-        '''
-        # Addentry to the symbol table when finding either a void or int declaration
-        if current_node.value == "int":
-            name            = current_node.children[0].value
-            _type           = "int"
-            propery_dict    = deepcopy(property_dict)
-            property_dict   = {}
-            
-            # Check for int array
-            if len(current_node.children) > 1:
-                _type = "int[]"
-                property_dict["size"] = current_node.children[1].value
-
-            # Add entry to the table
-            error = globalTable.insert(name, _type, property_dict)
-            if error:
-                errorDetected = True
-    
-        '''
-        FUNCTION
-        '''
-
-        # Create local symbol table when detecting a function
-        if current_node.value == "fun_declaration":            
-            _type             = current_node.children[0].value
-            name              = current_node.children[1].value
-            propery_dict      = deepcopy(property_dict)
-            property_dict     = {}
-            
-            # Local symbol table declaration
-            currentScope = SymbolTable(globalTable, name)
-            
-            
-            '''
-            FUNCTION PARAMETERS
-            '''
-            
-            params_node = current_node.children[2]
-            if params_node.value == "void":
-                property_dict["params"] = "void"
-
-            # Iterate through parameters for adding in both symbol tables (global and local)
-            else:
-                global_param_list = []
-                for j in range(len(params_node.children)):
-                    local_node = params_node.children[j]
-                    p_type = local_node.value
-                    p_name = local_node.children[0].value
-                    global_param_list.append(p_type)
-                    error = currentScope.insert(p_name, p_type, {})
-                    if error:
-                        errorDetected = True
-                    
-                property_dict["params"] = global_param_list
-            
-            # Add function declaration to the global scope
-            error = globalTable.insert(name, _type, property_dict)
-            error = currentScope.insert(name, _type, property_dict)
-            if error:
-                errorDetected = True
-            
-            
-            # Add variable declarations made inside the function
-            '''
-            FUNCTION VARIABLES
-            '''
-            function_child = 3
-            while current_node.children[function_child].value == "int":
-                local_int = current_node.children[function_child]
-                # Check if the declaration is an int or an int[]
-                # Int
-                p_name = local_int.children[0].value
-                if len(local_int.children) == 1:
-                    error = currentScope.insert(p_name, "int", {})
-                    if error:
-                        errorDetected = True
-                    
-                # Int[]
-                else:
-                    propery_dict          = deepcopy(property_dict)
-                    property_dict         = {}
-                    property_dict["size"] = local_int.children[1].value
-                    error = currentScope.insert(p_name, "int[]", property_dict)
-                    if error:
-                        errorDetected = True
-                    
-                function_child += 1
-            
-            globalTable.addChild(currentScope)
+        fun_type = node.children[0].value
+        fun_name = node.children[1].value
+        fun_properties = {}
+        
+        if node.children[2].value == "void":
+            fun_properties["params"] = "void"
+        else:
+            parameters = []
+            for child in node.children[2].children:
+                parameters.append(child.value)
+            fun_properties["params"] = parameters
+        new_symbol_table = SymbolTable(current_symbol_table, node.value)
+        
+        # Register function in this scope and in the parent scope
+        new_symbol_table.insert(fun_name, fun_type, fun_properties)
+        current_symbol_table.insert(fun_name, fun_type, fun_properties)
+        
+        # Register compund statement variables
+        for child in node.children:            
+            # Compound statement function declarations
+            if child.value == "compound_statement":
+                register_variables(child, new_symbol_table)
                 
-    return globalTable, errorDetected
+                for gradnchild in child.children:
+                    next_node_st(gradnchild, new_symbol_table)
+        current_symbol_table.addChild(new_symbol_table)
+
+    #######################################
+    #INNER COMPOUND STATEMENT DECLARATION #
+    #######################################
+    elif node.value == "compound_statement":
+        new_symbol_table = SymbolTable(current_symbol_table, node.value)
+        register_variables(node, new_symbol_table)
+        current_symbol_table.addChild(new_symbol_table)
+        
+        for child in node.children:
+            next_node_st(child, new_symbol_table)
+        
+    ##################
+    #GO TO NEXT NODE #
+    ##################
+    else:
+        for child in node.children:
+            next_node_st(child, current_symbol_table)
 
 
+# Helper Function for registering variable declarations in a given symbol table
+def register_variables(node, symbol_table):
+    for child in node.children:
+        
+        if child.value == "int":
 
+            # int
+            if len(child.children)==1:
+                symbol_table.insert(child.children[0], "int", {})
+                
+            # int[]
+            else:
+                property_dict         = {}
+                property_dict["size"] = child.children[1].value
+                symbol_table.insert(child.children[0], "int[]", property_dict)
+        
+        # Declarations always go first
+        else:
+            break
+            
 '''
 TYPE CHECK FUNCTION
 '''

@@ -71,27 +71,11 @@ class TraverseTree:
                             
                     # Check that variable inside is an int
                     except ValueError:
-                        
                         return self.typecheck(node.children[0], symbol_tables)
-                        #print(node)
-                        #pass
-                    #print(var_properties[0]["size"])
-            
-                # Int
-                #elif var_properties[0] = "int":
-                #print(node)
-                #print(var_properties)
-            
-        
-
             
         # None of the options listed above worked
         return False
-    
-    
-    # 
-    
-        
+
     # Helper function to check if value of the node is equal to at least one element in the array
     def compare_node_value(self, node_value, values_array):
         for value in values_array:

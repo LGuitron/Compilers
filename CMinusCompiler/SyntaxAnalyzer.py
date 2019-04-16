@@ -154,9 +154,9 @@ class SyntaxAnalyzer:
                         # Check for function compound statement
                         compound_statement = self.compound_stmt()
                         if compound_statement is not None:
-                            
-                            for child in compound_statement:
-                                node.addChild(child)
+                            node.addChild(compound_statement)
+                            #for child in compound_statement:
+                                #node.addChild(child)
                             return node
         return None
 
@@ -236,6 +236,7 @@ class SyntaxAnalyzer:
     def compound_stmt(self):
 
         # Declare array of children for the compound statement
+        node = TreeNode("compound_statement")
         nodes = None
         
         # Check for left key
@@ -249,7 +250,8 @@ class SyntaxAnalyzer:
                 
                 #Add each child of the local declaration as child of the compound_stmt
                 for child in local_vars:
-                    nodes.append(child)
+                    node.addChild(child)
+                    #nodes.append(child)
             
             # Check for statement_list
             stmt_list = self.statement_list()
@@ -257,12 +259,13 @@ class SyntaxAnalyzer:
                 
                 # Append each child of statement list as child of the compound_stmt
                 for child in stmt_list:
-                    nodes.append(child)
+                    node.addChild(child)
+                    #nodes.append(child)
                 
             # Check for right key
             if self.match([TokenType.RKEY]) is not None:
-                #return node
-                return nodes
+                return node
+                #return nodes
         
         return None
     
