@@ -1,0 +1,44 @@
+/* Un programa para realizar el algoritmo
+de Euclides para calcular mod. */
+
+int x [20];
+int a;
+int b [10];
+
+int gdc (int u, int v, int a [])
+{
+    int e[10];
+    int f[10];
+    int g[10];
+    b[e[f[g[1]]]] = 2 + 3 / 4;
+    
+    {
+        int a;
+        int b;
+        int c;
+        {
+            int tt;
+            int jj;
+            int kkk[10];
+        }
+    }
+
+    while(a==2)
+    {
+        int h;
+        int i;
+        int j;
+    }
+    
+    if ( v == 0) {return u;}
+    else return gdc(v,u-u/v*v);
+    /* u-u/v*v == u mod v */
+}
+
+
+/*void main(void)
+{
+     int x; int y;
+     x = input(); y = input();
+     output(gcd(x,y));
+}*/

@@ -2,16 +2,19 @@
 class SymbolTable:
     
     
-    def __init__(self, parentTable = None, scopeName = "Global Scope"):
-        self.scopeName  = scopeName 
-        self.dictionary  = {}
-        self.parentTable = parentTable  # Store parentTable
-        self.childTables = []           # List storing all children for this symbol table
+    def __init__(self, parentTable = None, reqReturnVerification = False, scopeName = "Global Scope", returnType = None):
+        self.reqReturnVerification = reqReturnVerification  # Boolean to determine if this scope requires a return statement (only function scopes)
+        self.returnVerified        = False
+        self.scopeName             = scopeName 
+        self.returnType            = returnType             # Return Type for this scope 
+        self.dictionary            = {}
+        self.parentTable           = parentTable            # Store parentTable
+        self.childTables           = []                     # List storing all children for this symbol table
         
     # Add new entry to symbol table
     def insert(self, _name, _type, _property_dict):
         if _name in self.dictionary:
-            print("ERROR: Redeclaración de la variable", _name, "en", self.scopeName)
+            print("Error: Redeclaración de la variable", _name, "en", self.scopeName)
             return True
         self.dictionary[_name] = (_type, _property_dict)
         return False
@@ -28,7 +31,7 @@ class SymbolTable:
                 return parent.dictionary[name]
             parent = parent.parentTable
 
-        print("ERROR: la variable", name, "no fue declarada en", self.scopeName )
+        print("Error: la variable", name, "no fue declarada en", self.scopeName )
         return None
 
     def print_w_indent(self, level):

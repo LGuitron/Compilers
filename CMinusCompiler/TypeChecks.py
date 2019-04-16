@@ -13,9 +13,7 @@ def typecheck(node, symbol_tables):
         pass
         
     # Operator check
-    if compare_node_value(node.value, ["<", "<=", ">=", ">", "+", "-", "*", "/", "="]):
-        
-        #print("CHECK: ", node.value)
+    if compare_node_value(node.value, ["<", "<=", "==", ">=", ">", "+", "-", "*", "/", "="]):
         
         # Check that all of the children of this node are integers
         for child in node.children:
@@ -26,10 +24,96 @@ def typecheck(node, symbol_tables):
     # Symbol table check
     var_properties = symbol_tables.lookup(node.value)
     if var_properties is not None:
+        
+        
+        
+        
+        # Integer
+        if var_properties[0] == "int":
+            
+            # Function
+            if "params" in var_properties[1]:
+                
+                # Check that this name was called as a function                
+                if len(node.children) > 0 and node.children[0].value == "args":
+                    
+                    # Void function call
+                    if var_properties[1]["params"] == "void":
+                        if node.children[0].children[0].value == "void":
+                            return True
+                        else:
+                            print("Error: la funcion", node.value,"() llamada en", symbol_tables.scopeName, "no recibe parametros")
+                            return False
+                        #print(node.children[0])
+                    #exit()
+                    
+                    
+                    # Check that the number of arguments is the same
+                    if len (var_properties[1]["params"]) == len(node.children[0].children):
+                        
+                        success = True
+                        for i in range(len(node.children[0].children)):
+                            current_type = var_properties[1]["params"][i]
+                            current_node = node.children[0].children[i]
+                            
+                            # Integer parameter validation
+                            if current_type == "int":
+                                
+                                if not typecheck(current_node, symbol_tables):
+                                    print("Error: ", current_node.value, "no es int")
+                                    success = False
+                            
+                            # Integer[] validation 
+                            elif current_type == "int[]":
+                                
+                                arr_properties = symbol_tables.lookup(current_node.value)
+                                if arr_properties is not None:
+                                    
+                                    if arr_properties[0] != "int[]":
+                                        print("Error: se esperaba int[] en el parametro", i, "en llamada a", node.value, "en", symbol_tables.scopeName)
+                                        success = False
+                                    
+                                    # Error array received index, (so it is an int)
+                                    elif len(current_node.children) > 0:
+                                            print("Error: se esperaba int[] en el parametro", i, "en llamada a", node.value, "en", symbol_tables.scopeName)
+                                            success = False
+                                else:
+                                    print("Error: int[]", current_node.value, "no fue declarado en llamada a", node.value, "en", symbol_tables.scopeName)
+                                    success = False
+
+                        return success
+                            #print(current_type)
+                            #print(current_node)
+                        
+                        # TODO check argument types
+                        #pass
+                    
+                    # Error, numero de argumentos incorrecto
+                    else:
+                        print("Error: se esperaban" , len (var_properties[1]["params"]), "parametros, pero se recibieron", len(node.children[0].children), "en llamada a", node.value,"en",symbol_tables.scopeName)
+                        return False
+                
+                else:
+                    print("Error: ", node.value, "es una funcion, no una variable")
+                    return False
+                
+                
+                #print(node)
+                #print(var_properties)
+            
+            # Value
+            else:
+                return True
+            
+            
+            
+            #print(var_properties)
+            #return True
+        
         # Integer []
-        if var_properties[0] == "int[]":
+        elif var_properties[0] == "int[]":
             if len(node.children)==0:
-                print("ERROR: se esperaba int y se recibio int[] variable", node.value, "en", symbol_tables.scopeName)
+                print("Error: se esperaba int y se recibio int[] variable", node.value, "en", symbol_tables.scopeName)
                 return False
         
             # 1 child (array with index)
@@ -38,7 +122,7 @@ def typecheck(node, symbol_tables):
                 try: 
                     index = int(node.children[0].value)
                     if index >= int(var_properties[1]["size"]):
-                        print("ERROR: indice", index, "fuera de rango en la variable", node.value,"en", symbol_tables.scopeName)
+                        print("Error: indice", index, "fuera de rango en la variable", node.value,"en", symbol_tables.scopeName)
                         return False
                         
                 # Check that variable inside is an int
@@ -46,6 +130,7 @@ def typecheck(node, symbol_tables):
                     return typecheck(node.children[0], symbol_tables)
         
     # None of the options listed above worked
+    print("Error:", node.value, "no es int")
     return False
 
 # Helper function to check if value of the node is equal to at least one element in the array

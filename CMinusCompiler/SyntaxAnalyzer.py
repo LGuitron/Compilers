@@ -735,7 +735,7 @@ class SyntaxAnalyzer:
         # Restore token and Return an empty TreeNode for epsilon
         self.current_token = saved_token
         node = TreeNode("args")
-        node.addChild(TreeNode("empty"))
+        node.addChild(TreeNode("void"))
         return node
     
     '''
