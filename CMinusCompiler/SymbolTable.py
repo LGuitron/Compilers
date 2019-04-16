@@ -22,19 +22,19 @@ class SymbolTable:
             return self.dictionary[name]
         
         # look at parentTable
-        elif self.parentTable is not None in self.parentTable.dictionary:
-            return self.parentTable.dictionary[name]
-        
-        # Return None if it does not exist
+        parent = self.parentTable
+        while parent is not None:
+            if name in parent.dictionary:
+                return parent.dictionary[name]
+            parent = parent.parentTable
+
         print("ERROR: la variable", name, "no fue declarada en", self.scopeName )
         return None
 
     def print_w_indent(self, level):
         return_str = "\n"
         for key, value in self.dictionary.items():
-            temp_str     = "\t"*level + str(key)
-            temp_str     = temp_str[:-1]
-            return_str  += temp_str + " : " + str(value) + "\n"
+            return_str  += "\t"*level + str(key) + " : " + str(value) + "\n"
         return_str += "\t"*level + "------------------------------------\n"    
         
         # Print children symbol tables

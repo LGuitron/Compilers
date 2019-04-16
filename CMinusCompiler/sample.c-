@@ -5,19 +5,12 @@ int x [20];
 int a;
 int b [10];
 
-
-void gdc(void)
-{
-    int a;
-}
-
 int gdc (int u, int v, int a [])
 {
     int e[10];
     int f[10];
     int g[10];
     b[e[f[g[1]]]] = 2 + 3 / 4;
-    
     
     {
         int a;
@@ -43,9 +36,9 @@ int gdc (int u, int v, int a [])
 }
 
 
-void main(void)
+/*void main(void)
 {
      int x; int y;
      x = input(); y = input();
      output(gcd(x,y));
-}
+}*/

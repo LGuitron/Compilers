@@ -1,6 +1,6 @@
-from TraverseTree import TraverseTree
 from SymbolTable import SymbolTable 
 from copy import deepcopy
+from TypeChecks import *
 
 '''
 SYMBOL TABLE FUNCTION
@@ -8,9 +8,9 @@ SYMBOL TABLE FUNCTION
 def tabla(tree, imprime = True):
 
     globalTable   = SymbolTable()                    # Start by initializing global symbol table
-    next_node_st(tree, globalTable)                  # Function for building symbol tables recursively
     register_variables(tree, globalTable)            # Register global variables in global symbol table
-    return globalTable, False                        # TODO determine if a variable redeclaration error occured
+    next_node_st(tree, globalTable)                  # Function for building symbol tables recursively
+    return globalTable, False                        # TODO determine if an error occured
 
 # Helper function for traversing for building symbol tables
 def next_node_st(node, current_symbol_table):
@@ -31,7 +31,7 @@ def next_node_st(node, current_symbol_table):
             for child in node.children[2].children:
                 parameters.append(child.value)
             fun_properties["params"] = parameters
-        new_symbol_table = SymbolTable(current_symbol_table, node.value)
+        new_symbol_table = SymbolTable(current_symbol_table, fun_name)
         
         # Register function in this scope and in the parent scope
         new_symbol_table.insert(fun_name, fun_type, fun_properties)
@@ -57,7 +57,17 @@ def next_node_st(node, current_symbol_table):
         
         for child in node.children:
             next_node_st(child, new_symbol_table)
-        
+    
+    
+    #####################################
+    # TYPECHECK FOR ARITMETIC OPERATORS #
+    #####################################
+    elif compare_node_value(node.value, ["<", "<=", ">=", ">", "+", "-", "*", "/", "="]):
+        typecheck(node, current_symbol_table)
+        #print(node)
+        #print("TC: ", node.value)
+    
+    
     ##################
     #GO TO NEXT NODE #
     ##################
@@ -74,29 +84,29 @@ def register_variables(node, symbol_table):
 
             # int
             if len(child.children)==1:
-                symbol_table.insert(child.children[0], "int", {})
+                symbol_table.insert(child.children[0].value, "int", {})
                 
             # int[]
             else:
                 property_dict         = {}
                 property_dict["size"] = child.children[1].value
-                symbol_table.insert(child.children[0], "int[]", property_dict)
+                symbol_table.insert(child.children[0].value, "int[]", property_dict)
         
         # Declarations always go first
         else:
             break
-            
+
 '''
-TYPE CHECK FUNCTION
+MAIN SEMANTIC FUNCTION CALL
 '''
 def semantica(tree, imprime = True):
 
     symbol_tables, errorDetected = tabla(tree, imprime)
     
     # If there were no errors when building symbol table continue with typechecking
-    if not errorDetected:
-        traversal = TraverseTree()
-        errorDetected = traversal.traverse(tree, symbol_tables)
+    #if not errorDetected:
+    #    traversal = TraverseTree()
+    #    errorDetected = traversal.traverse(tree, symbol_tables)
     
     if imprime and not errorDetected:
         #print(tree)
