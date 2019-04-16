@@ -17,6 +17,7 @@ void vacio(void)
 int minloc (int a[], int low, int high)
 {
     int i; int x; int k;
+    
     k = low;
     x = a[low];
     i = low + 1;
@@ -29,16 +30,14 @@ int minloc (int a[], int low, int high)
         }
         i = i + 1;
     }
-    
     return cinco(2,k,myarray);
 }
-
 
 void sort( int a[], int low, int high)
 {
     int i; int k;
     i = low;
-
+    
     while(i < high - 1)
     {
         int t;

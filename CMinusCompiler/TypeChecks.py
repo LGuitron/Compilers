@@ -82,11 +82,6 @@ def typecheck(node, symbol_tables):
                                     success = False
 
                         return success
-                            #print(current_type)
-                            #print(current_node)
-                        
-                        # TODO check argument types
-                        #pass
                     
                     # Error, numero de argumentos incorrecto
                     else:
@@ -96,19 +91,10 @@ def typecheck(node, symbol_tables):
                 else:
                     print("Error: ", node.value, "es una funcion, no una variable")
                     return False
-                
-                
-                #print(node)
-                #print(var_properties)
-            
+
             # Value
             else:
                 return True
-            
-            
-            
-            #print(var_properties)
-            #return True
         
         # Integer []
         elif var_properties[0] == "int[]":

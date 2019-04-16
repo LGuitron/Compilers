@@ -81,6 +81,14 @@ def next_node_st(node, current_symbol_table):
     elif compare_node_value(node.value, ["<", "<=", "==", ">=", ">",  "+", "-", "*", "/", "="]):
         success = typecheck(node, current_symbol_table)
         errorDetected = errorDetected or (not success)        
+    
+    
+    ##########################
+    # PREVENT VOID VARIABLES #
+    ##########################
+    elif node.value == "void" and len(node.children) > 0:
+        print("Error: no se pueden declarar variables de tipo void (variable", node.children[0].value, ") en", current_symbol_table.scopeName)
+        errorDetected = True
         
     ###############################
     # CHECK FUNCTION RETURN VALUE #
