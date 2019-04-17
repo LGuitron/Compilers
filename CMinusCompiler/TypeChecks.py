@@ -24,18 +24,16 @@ def typecheck(node, symbol_tables):
     # Symbol table check
     var_properties = symbol_tables.lookup(node.value)
     if var_properties is not None:
-        
-        
-        
-        
+
         # Integer
         if var_properties[0] == "int":
-            
+
             # Function
             if "params" in var_properties[1]:
+        
                 
                 # Check that this name was called as a function                
-                if len(node.children) > 0 and node.children[0].value == "args":
+                if len(node.children) > 0 and node.children[0].value == "_args":
                     
                     # Void function call
                     if var_properties[1]["params"] == "void":
@@ -43,10 +41,7 @@ def typecheck(node, symbol_tables):
                             return True
                         else:
                             print("Error: la funcion", node.value,"() llamada en", symbol_tables.scopeName, "no recibe parametros")
-                            return False
-                        #print(node.children[0])
-                    #exit()
-                    
+                            return False                    
                     
                     # Check that the number of arguments is the same
                     if len (var_properties[1]["params"]) == len(node.children[0].children):
@@ -94,6 +89,11 @@ def typecheck(node, symbol_tables):
 
             # Value
             else:
+                
+                # Check that the integer was called as variable and not as function
+                if len(node.children) > 0 and node.children[0].value == "_args":
+                    print("Error:", node.value, "es una variable y no puede ser llamada como funcion")
+                    return False
                 return True
         
         # Integer []

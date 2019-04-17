@@ -9,14 +9,10 @@ int cinco(int a, int b, int c[])
     return 5;
 }
 
-void vacio(void)
-{
-    int a;
-}
-
 int minloc (int a[], int low, int high)
 {
     int i; int x; int k;
+    int vacio;
     
     k = low;
     x = a[low];
@@ -47,6 +43,8 @@ void sort( int a[], int low, int high)
         a[i] = t;
         i = i + 1;
     }    
+    
+    k = i;
 }
 
 void main(void)
@@ -64,5 +62,11 @@ void main(void)
     {
         output(x[i]);
         i = i + 1;
-    }
+    }    
 }
+
+
+/*void vacio(void)
+{
+    int a;
+}*/

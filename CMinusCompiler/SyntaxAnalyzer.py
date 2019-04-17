@@ -88,8 +88,6 @@ class SyntaxAnalyzer:
     4. var-declaration -> type-specifier ID [ \[ NUM \] ] ;
     '''
     def var_declaration(self):
-        
-        #node = TreeNode("var_declaration")
         type_spec = self.type_specifier()
         
         # Check for type specifier
@@ -188,7 +186,7 @@ class SyntaxAnalyzer:
     '''
     def param_list(self):
         
-        params_node = TreeNode("params")
+        params_node = TreeNode("_params")
         new_param   = self.param()
         
         if new_param is not None:
@@ -734,7 +732,7 @@ class SyntaxAnalyzer:
 
         # Restore token and Return an empty TreeNode for epsilon
         self.current_token = saved_token
-        node = TreeNode("args")
+        node = TreeNode("_args")
         node.addChild(TreeNode("void"))
         return node
     
@@ -743,7 +741,7 @@ class SyntaxAnalyzer:
     '''
     def arg_list(self):
         
-        node = TreeNode("args")
+        node = TreeNode("_args")
         
         # Look for first expression
         new_expression = self.expression()

@@ -3,6 +3,10 @@ from copy import deepcopy
 from TypeChecks import *
 
 errorDetected = False
+last_function = ""
+
+# Reserve node names (they will not be looked in the symbol table)
+nodeNames = ["int", "void", "declaration_list", "fun_declaration", "_params", "int[]", "compound_statement", "if", "while", "return", "_args"]
 
 '''
 SYMBOL TABLE FUNCTION
@@ -16,12 +20,18 @@ def tabla(tree, imprime = True):
     globalTable.insert("output", "void", {"params":["int"]})  # Register special output() function
     next_node_st(tree, globalTable)                           # Function for building symbol tables recursively
     error = error or checkReturns(globalTable)                # Check for errors in return statements  
+
+    # Check that last function is main
+    if last_function != "main":
+        print("Error: la ultima funcion declarada en el programa debe llamarse main")
+        return globalTable, True
     return globalTable, (error or errorDetected)
 
 # Helper function for traversing for building symbol tables
 def next_node_st(node, current_symbol_table):
     
     global errorDetected
+    global last_function
     
     #######################
     #FUNCTION DECLARATION #
@@ -52,6 +62,7 @@ def next_node_st(node, current_symbol_table):
         # Register function in this scope and in the parent scope
         new_symbol_table.insert(fun_name, fun_type, fun_properties)
         current_symbol_table.insert(fun_name, fun_type, fun_properties)
+        last_function = fun_name
         
         # Register compund statement variables
         for child in node.children:            
@@ -81,7 +92,7 @@ def next_node_st(node, current_symbol_table):
     elif compare_node_value(node.value, ["<", "<=", "==", ">=", ">",  "+", "-", "*", "/", "="]):
         success = typecheck(node, current_symbol_table)
         errorDetected = errorDetected or (not success)        
-    
+        
     
     ##########################
     # PREVENT VOID VARIABLES #
@@ -110,6 +121,30 @@ def next_node_st(node, current_symbol_table):
         elif current_symbol_table.returnType == "void":
             print("Error: la funcion",current_symbol_table.scopeName, "es void y se declaro con un return")
             errorDetected = True
+    
+    ##########################
+    # CHECK IDENTIFIER NODES #
+    ##########################
+    elif node.value not in nodeNames:
+
+        # Check for raw numbers
+        try: 
+            int(node.value)
+        
+        # Look at symbol table
+        except ValueError:
+            var_properties = current_symbol_table.lookup(node.value)
+            if var_properties is None:
+                print("Error:", node.value, "no fue declarada en", current_symbol_table.scopeName)
+                errorDetected = True
+
+    #######################################
+    # CHECK IF/WHILE CONDITIONS TO BE INT #
+    #######################################
+    elif node.value == "if" or node.value == "while":
+        success = typecheck(node.children[0], current_symbol_table)
+        errorDetected = errorDetected or (not success)      
+    
     
     ##################
     #GO TO NEXT NODE #
