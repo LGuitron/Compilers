@@ -9,6 +9,8 @@ int cinco(int a, int b, int c[])
     return 5;
 }
 
+int t[10];
+
 int minloc (int a[], int low, int high)
 {
     int i; int x; int k;

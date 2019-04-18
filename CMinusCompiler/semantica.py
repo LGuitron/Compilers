@@ -32,7 +32,7 @@ def next_node_st(node, current_symbol_table):
     
     global errorDetected
     global last_function
-    
+
     #######################
     #FUNCTION DECLARATION #
     #######################
@@ -177,8 +177,8 @@ def register_variables(node, symbol_table):
         
         
         # Declarations always go first
-        else:
-            break
+        #else:
+        #    break
 
 
 # Helper function to determine if there are Errors in the return values of a scope
@@ -201,6 +201,5 @@ MAIN SEMANTIC FUNCTION CALL
 def semantica(tree, imprime = True):
     symbol_tables, errorDetected = tabla(tree, imprime)
     if imprime and not errorDetected:
-        #print(tree)
         print(symbol_tables)
     return symbol_tables
