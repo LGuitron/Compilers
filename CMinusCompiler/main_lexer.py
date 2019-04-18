@@ -1,7 +1,7 @@
 from globalTypes import *
 from lexer import *
 
-f = open('mini_sample.c-', 'r')
+f = open('sample.c-', 'r')
 programa = f.read()             # lee todo el archivo a compilar
 progLong = len(programa)        # longitud original del programa
 programa = programa + '$'       # agrega un caracter $ que representa EOF

@@ -1,0 +1,1 @@
+1. Variables int son inicializadas con 0?

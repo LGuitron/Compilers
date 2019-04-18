@@ -133,10 +133,57 @@ def next_node_st(node, current_symbol_table):
         
         # Look at symbol table
         except ValueError:
+
             var_properties = current_symbol_table.lookup(node.value)
             if var_properties is None:
                 print("Error:", node.value, "no fue declarada en", current_symbol_table.scopeName)
                 errorDetected = True
+
+            # Check that the Identifier is used properly Variable, Function or Array
+            else:
+                dict_length = 0
+                for k, v in var_properties[1].items():
+                    dict_length += 1
+                
+                # IS INTEGER
+                if var_properties[0] == "int":
+                
+                    # INT VARIABLE
+                    if dict_length == 0:
+                        if len(node.children) > 0:
+                            print("Error:", node.value, "es una variable y no puede ser llamada como arreglo o funcion")
+                            errorDetected = True
+                        
+                    # TODO INT FUNCTION
+                    else:
+                        success = validate_parameters(node, var_properties, current_symbol_table)
+                        if not success:
+                            errorDetected = True
+                        #print("ID: " , node)
+                        #print(var_properties)
+                
+                
+                # INT ARRAY
+                elif var_properties[0] == "int[]":
+                    if len(node.children)>0 and node.children[0].value == "_args":
+                        print("Error:", node.value, "es un arreglo y no puede ser llamado como funcion")
+                        errorDetected = True
+                
+                # VOID FUNCTION
+                else:
+                    
+                    if len(node.children) == 0:
+                        print("Error:", node.value, "es una funcion y no puede ser llamada como variable")
+                        errorDetected = True
+                    
+                    elif node.children[0].value != "_args":
+                        print("Error:", node.value, "es una funcion y no puede ser llamada como arreglo")
+                        errorDetected = True
+                    
+                    else:
+                        success = validate_parameters(node, var_properties, current_symbol_table)
+                        if not success:
+                            errorDetected = True
 
     #######################################
     # CHECK IF/WHILE CONDITIONS TO BE INT #
@@ -177,11 +224,6 @@ def register_variables(node, symbol_table):
         # Int[] without set value
         elif child.value == "int[]":
             symbol_table.insert(child.children[0].value, "int[]", {})
-        
-        
-        # Declarations always go first
-        #else:
-        #    break
 
 
 # Helper function to determine if there are Errors in the return values of a scope
@@ -205,4 +247,8 @@ def semantica(tree, imprime = True):
     symbol_tables, errorDetected = tabla(tree, imprime)
     if imprime and not errorDetected:
         print(symbol_tables)
+    
+    # Terminate execution if there was an error
+    else:
+        exit()
     return symbol_tables
