@@ -13,7 +13,7 @@ def typecheck(node, symbol_tables):
         pass
         
     # Operator check
-    if compare_node_value(node.value, ["<", "<=", "==", ">=", ">", "+", "-", "*", "/", "="]):
+    if compare_node_value(node.value, ["<", "<=", "==", "!=", ">=", ">", "+", "-", "*", "/", "="]):
         
         # Check that all of the children of this node are integers
         for child in node.children:

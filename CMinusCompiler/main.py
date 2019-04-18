@@ -2,7 +2,7 @@ from globalTypes import *
 from Parser import *
 from semantica import *
 
-f = open('sample.c-', 'r')
+f = open('samples.c-', 'r')
 programa = f.read()         # lee todo el archivoacompilar 
 progLong = len(programa)    # longitud original del programa
 programa = programa + '$'   # agregar un caracter $ que represente EOF

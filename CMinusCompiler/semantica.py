@@ -89,7 +89,7 @@ def next_node_st(node, current_symbol_table):
     #####################################
     # TYPECHECK FOR ARITMETIC OPERATORS #
     #####################################
-    elif compare_node_value(node.value, ["<", "<=", "==", ">=", ">",  "+", "-", "*", "/", "="]):
+    elif compare_node_value(node.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/", "="]):
         success = typecheck(node, current_symbol_table)
         errorDetected = errorDetected or (not success)        
         
@@ -145,7 +145,10 @@ def next_node_st(node, current_symbol_table):
         success = typecheck(node.children[0], current_symbol_table)
         errorDetected = errorDetected or (not success)      
     
-    
+        for child in node.children:
+            next_node_st(child, current_symbol_table)
+        
+        
     ##################
     #GO TO NEXT NODE #
     ##################

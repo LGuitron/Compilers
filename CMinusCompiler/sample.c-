@@ -1,6 +1,7 @@
 /* Un programa para realizar ordenación por
     selección en un arreglo de 10 elementos. */
 
+int u;
 int x[10];
 int myarray[15];
 
@@ -14,7 +15,6 @@ int t[10];
 int minloc (int a[], int low, int high)
 {
     int i; int x; int k;
-    int vacio;
     
     k = low;
     x = a[low];
