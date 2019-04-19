@@ -1,29 +1,24 @@
+from RuntimeErrors import *
 from codeGeneration import *
 
 # Global variable used for current sp_offset
 sp_offset = 0
 
 def codeGen(AST, filename):
+    
     f= open(filename,"w+")
     f.write(".data\nnewline: .asciiz \"\\n\" \n")
+    f.write("negindex: .asciiz \"Error de runtime: No se permiten indices negativos\" \n")
+    f.write("outbounds: .asciiz \"Error de runtime: Indice fuera de rango\" \n")
     f.write(".text\n.globl main\n\nmain:\n")
     
     # TODO declare and store global variables
     
     var_dict = {}
     traverseCGEN(AST, f, var_dict)
-    
-    
-    f.write("\nend:\nli $v0 10\nsyscall")
-    
-    #for key, value in var_dict.items():
-    #    print(key, " : " , value)
-    
-    
-    
+    add_runtime_errors(f)
     
 # Traverse tree and generate code on particular cases
-
 # PARAMETERS
 # node      : Current node checked
 # f         : File pointer to write generated code
@@ -54,7 +49,7 @@ def traverseCGEN(node, f, var_dict):
 
     # ASSIGNMENTS
     elif node.value == "=": 
-       assign_int(node, f, var_dict, sp_offset)
+        assign_int(node, f, var_dict, sp_offset)
         
 
     # RESERVED OUTPUT FUNCTION

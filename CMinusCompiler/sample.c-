@@ -4,7 +4,10 @@ void main(void)
     int b;
     int c;
     int d[3];
-    
+        
+    a = 2;
+
+    d[a] = 1;
     
     a = b = c = 1;
     a = a + (2 + (3 + (4 + (5 + (6 + (7 + (8)))))));
@@ -14,4 +17,5 @@ void main(void)
     output(a);
     output(b);
     output(c);
+    output(d[2]);
 }

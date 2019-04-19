@@ -164,8 +164,6 @@ def next_node_st(node, current_symbol_table):
                         success = validate_parameters(node, var_properties, current_symbol_table)
                         if not success:
                             errorDetected = True
-                        #print("ID: " , node)
-                        #print(var_properties)
                 
                 
                 # INT ARRAY
@@ -257,10 +255,12 @@ MAIN SEMANTIC FUNCTION CALL
 '''
 def semantica(tree, imprime = True):
     symbol_tables, errorDetected = tabla(tree, imprime)
-    if imprime and not errorDetected:
-        print(symbol_tables)
     
-    # Terminate execution if there was an error
-    else:
+    
+    if errorDetected:
         exit()
+    
+    elif imprime:
+        print(symbol_tables)
+
     return symbol_tables

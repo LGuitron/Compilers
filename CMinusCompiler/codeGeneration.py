@@ -29,9 +29,9 @@ def declare_int(node, f, var_dict, sp_offset):
     f.write("addiu $sp $sp -4\n")
     
 
-####################
+######################
 # INT[] DECLARATIONS #
-####################
+######################
 def declare_int_array(node, f, var_dict, sp_offset):
 
     # Store sp_offset and array size in dictionary
@@ -56,7 +56,38 @@ def assign_int(node, f, var_dict, sp_offset):
     for i in range(len(node.children)-1):
         child = node.children[i]
         current_sp = var_dict[child.value]
-        f.write("sw $a0 " +str(current_sp)+"($sp)"+"\n")
+        
+        # IN CASE OF ARRAY MOVE CURRENT SP ACCORDING TO INDEX VALUE
+        if len(child.children) == 1:
+            
+            # $a0 index | $a1 value
+            
+            # COPY NODE VALUE'S VALUE TO $a1 REGISTER BEFORE EVALUATING INDEX
+            f.write("move $a1 $a0\n")
+            
+            # GET ARRAY SIZE AND START SP VALUE
+            arr_size   = current_sp[1]
+            current_sp = current_sp[0] 
+            eval_node(child.children[0], f, var_dict, sp_offset)
+            
+            # CHECK THAT INDEX IS IN BOUNDS
+            f.write("blt $a0 $zero Negindexerror\n")             # NEGATIVE INDEX ERROR
+            f.write("li $a2 " + str(arr_size) + "\n")            # LOAD ARRAY SIZE INTO $a2 REGISTER
+            f.write("bge $a0 $a2 Outboundserror\n")              # OUT OF BOUNDS ERROR
+            
+            # INDEX IS OK
+            f.write("move $a2 $sp\n")                            # STORE CURRENT STACK POINTER IN $t0
+            f.write("addiu $a2 $a2 " + str(current_sp) + "\n")   # ADD SP_OFFSET OF ARRAY START TO $t0 REGISTER
+            f.write("li $a3 4\n")                                # LOAD CONSTANT 4 IN REGISTER
+            f.write("mul $a0 $a0 $a3\n")                         # MULTPLY INDEX VALUE BY 4
+            f.write("sub $a2 $a2 $a0\n")                         # SUBSTRACT THIS VALUE TO $t0 to get to the right position
+            
+            # STORE VALUE IN THIS POSITION
+            f.write("sw $a1 0($a2)"+"\n")
+        
+        # STORE INDEX IN ITS CURRENT SP VALUE
+        else:
+            f.write("sw $a0 " +str(current_sp)+"($sp)"+"\n")
     
     # TODO ASSIGNMENT FOR ARRAYS
 
@@ -65,6 +96,8 @@ def assign_int(node, f, var_dict, sp_offset):
 # OUTPUT FUNCTION #
 ###################
 def output_function(node, f, var_dict, sp_offset):
+    
+    print(node)
     
     f.write("li $v0 1\n")
     value_node = node.children[0].children[0]
