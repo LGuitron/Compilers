@@ -52,14 +52,18 @@ def typecheck(node, symbol_tables):
                 # Raw number index
                 try: 
                     index = int(node.children[0].value)
+                    print("I: ", index)
                     if index >= int(var_properties[1]["size"]):
                         print("Error: indice", index, "fuera de rango en la variable", node.value,"en", symbol_tables.scopeName)
                         return False
-                        
+                    
+                    else:
+                        return True
+                    
                 # Check that variable inside is an int
                 except ValueError:
                     return typecheck(node.children[0], symbol_tables)
-        
+
     # None of the options listed above worked
     print("Error:", node.value, "no es int")
     return False
