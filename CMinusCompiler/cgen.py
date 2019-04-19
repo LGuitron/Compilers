@@ -48,8 +48,9 @@ def traverseCGEN(node, f, var_dict):
     
         # Arrays
         else:
-            print("A: " , node)
-
+            declare_int_array(node, f, var_dict, sp_offset)
+            arr_size = int(node.children[1].value)
+            sp_offset += 4 * arr_size
 
     # ASSIGNMENTS
     elif node.value == "=": 

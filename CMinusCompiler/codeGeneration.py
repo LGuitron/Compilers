@@ -16,9 +16,9 @@ arithmetic_dict = {
                     ">" : "sgt"
                   }
 
-#########################
-# VARIABLE DECLARATIONS #
-#########################
+####################
+# INT DECLARATIONS #
+####################
 def declare_int(node, f, var_dict, sp_offset):
 
     var_dict[node.children[0].value] = sp_offset 
@@ -28,6 +28,22 @@ def declare_int(node, f, var_dict, sp_offset):
     f.write("sw $a0 " +str(sp_offset)+"($sp)"+"\n")
     f.write("addiu $sp $sp -4\n")
     
+
+####################
+# INT[] DECLARATIONS #
+####################
+def declare_int_array(node, f, var_dict, sp_offset):
+
+    # Store sp_offset and array size in dictionary
+    arr_size = int(node.children[1].value)
+    var_dict[node.children[0].value] = (sp_offset, arr_size)
+
+    # All integers are initialized with value of 0
+    for i in range(arr_size):
+        f.write("li $a0 0\n")
+        f.write("sw $a0 " +str(sp_offset + 4*i)+"($sp)"+"\n")
+        f.write("addiu $sp $sp -4\n")
+
 ########################
 # VARIABLE ASSIGNMENTS #
 ########################
@@ -111,8 +127,8 @@ def eval_arithmetic(node, f, var_dict, sp_offset):
             
             # RECURSIVE ARITHMETIC EXPRESSION
             if compare_node_value(value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
-                eval_arithmetic(child, f, var_dict, sp_offset + 4)
-                operands.append(sp_offset + 4)
+                eval_arithmetic(child, f, var_dict, sp_offset + 4 * (i+1))
+                operands.append(sp_offset + 4 * (i+1))
                 eval_method.append(False)
             
             # LOOK FOR SP_OFFSET

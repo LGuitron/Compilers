@@ -3,25 +3,15 @@ void main(void)
     int a;
     int b;
     int c;
-    int d;
-    int e;
-    a = b = 1;
+    int d[3];
     
+    
+    a = b = c = 1;
     a = a + (2 + (3 + (4 + (5 + (6 + (7 + (8)))))));
     b = b + 2 + 3 + 4 + 5 + 6 + 7 + 8;
-    c = 10 * (4 - 7);
-    d = 17 / (2 * (7 - 4));
-    e = 0;
+    c = ((c+2) + (3+4)) + ((5+6) + (7+8*c));
     
     output(a);
     output(b);
     output(c);
-    output(d);
-    output(d + c);
-    output(e < d + c);
-    output(e <= d + c);
-    output(e == d + c);
-    output(e != d + c);
-    output(e >= d + c);
-    output(e > d + c);
 }
