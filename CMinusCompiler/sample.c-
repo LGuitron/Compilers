@@ -15,6 +15,10 @@ void main(void)
     int b;
     int c[10];
     
+    int j[10];
+    
+    j[1] = 10;
+    
     a = b = 5;
     b = 7;
     

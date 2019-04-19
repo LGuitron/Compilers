@@ -15,9 +15,9 @@ def tabla(tree, imprime = True):
 
     error = False
     globalTable   = SymbolTable()                             # Start by initializing global symbol table
-    register_variables(tree, globalTable)                     # Register global variables in global symbol table
     globalTable.insert("input", "int", {"params":"void"})     # Register special input() function
     globalTable.insert("output", "void", {"params":["int"]})  # Register special output() function
+    error = error or register_variables(tree, globalTable)    # Register global variables in global symbol table
     next_node_st(tree, globalTable)                           # Function for building symbol tables recursively
     error = error or checkReturns(globalTable)                # Check for errors in return statements  
 
@@ -60,8 +60,13 @@ def next_node_st(node, current_symbol_table):
         
         
         # Register function in this scope and in the parent scope
-        new_symbol_table.insert(fun_name, fun_type, fun_properties)
-        current_symbol_table.insert(fun_name, fun_type, fun_properties)
+        error = False
+        error = new_symbol_table.insert(fun_name, fun_type, fun_properties)
+        error = current_symbol_table.insert(fun_name, fun_type, fun_properties)
+        
+        if error:
+            errorDetected = True
+        
         last_function = fun_name
         
         # Register compund statement variables
@@ -206,25 +211,32 @@ def next_node_st(node, current_symbol_table):
 
 # Helper Function for registering variable declarations in a given symbol table
 def register_variables(node, symbol_table):
+    
+    errorDetected = False
+    
     for child in node.children:
+        
+        new_error = False
         
         # Int or Int[] with set size
         if child.value == "int":
 
             # int
             if len(child.children)==1:
-                symbol_table.insert(child.children[0].value, "int", {})
+                new_error = symbol_table.insert(child.children[0].value, "int", {})
                 
             # int[]
             else:
                 property_dict         = {}
                 property_dict["size"] = child.children[1].value
-                symbol_table.insert(child.children[0].value, "int[]", property_dict)
+                new_error = symbol_table.insert(child.children[0].value, "int[]", property_dict)
         
         # Int[] without set value
         elif child.value == "int[]":
-            symbol_table.insert(child.children[0].value, "int[]", {})
+            new_error = symbol_table.insert(child.children[0].value, "int[]", {})
 
+        errorDetected = errorDetected or new_error
+    return errorDetected
 
 # Helper function to determine if there are Errors in the return values of a scope
 # Return if an error was detected
