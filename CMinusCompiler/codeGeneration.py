@@ -28,8 +28,8 @@ def assign_int(node, f, var_dict, sp_offset):
         
         # ARITHMETIC OPERATORS
         if value == "+":
+            #print(node)
             eval_arithmetic(node.children[len(node.children)-1], f, var_dict)
-            #print(value)
         
         # LOOK FOR VARIABLE SP_OFFSET VALUE IN DICTIONARY
         else:
@@ -109,17 +109,32 @@ def eval_arithmetic(node, f, var_dict, write_register="0"):
                 operands.append(value)
 
                 eval_method.append(2)
-                
+    
+
     
     # Load operands in temporal registries $t0 and $t1
     for i in range(len(node.children)):
+        child = node.children[i]
         if eval_method[i] == 0:         # Literal
             f.write("li $a" + str(i) + " " + str(operands[i]) + "\n")
-        #elif eval_method[i] == 1:       # Recursive arithmetic
             
+        elif eval_method[i] == 1:       # Recursive arithmetic
+            eval_arithmetic(child, f, var_dict, i)
         
         else:                           # Variable
             f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
-            
+        
+        
+        #print("ADD: " , node)
         # TODO check for more arithmetic operations
-        f.write("add $a" +str(write_register) + " $a0 $a1\n")
+        
+        
+    # Add operands if this node has two children
+    f.write("add $a" +str(write_register) + " $a0 $a1\n")
+        
+        #else:
+        #    print("a")
+        
+    #print(node)
+    #print(write_register)
+    #print("--------------------------------")
