@@ -1,28 +1,13 @@
-void j(void)
-{
-    int a;
-}
-
-
-int cinco(int a, int b[])
-{
-    return 5;
-}
-
 void main(void)
 {
     int a;
     int b;
-    int c[10];
-    int j[10];
-    
-    
-    
-    a = j[2];
-    j[2] = a;
-    
-    a = b = 5;
+    a = b = 1;
+    /*output(b);
     b = 7;
-    
-    /*a = a + 2;*/
+    output(b);
+    b = a;
+    output(b);*/
+    b = b + 2 + 3 + 4 + 5 + 6;
+    output(b);
 }

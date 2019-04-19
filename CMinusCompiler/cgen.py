@@ -5,6 +5,7 @@ sp_offset = 0
 
 def codeGen(AST, filename):
     f= open(filename,"w+")
+    f.write(".data\nnewline: .asciiz \"\\n\" \n")
     f.write(".text\n.globl main\n\nmain:\n")
     
     # TODO declare and store global variables
@@ -13,7 +14,7 @@ def codeGen(AST, filename):
     traverseCGEN(AST, f, var_dict)
     
     
-    f.write("end:\nli $v0 10\nsyscall")
+    f.write("\nend:\nli $v0 10\nsyscall")
     
     #for key, value in var_dict.items():
     #    print(key, " : " , value)
@@ -33,7 +34,7 @@ def traverseCGEN(node, f, var_dict):
     global sp_offset
     
     
-    # Int declarations
+    # INT DECLARATIONS
     if node.value == "int": 
         
         # Function
@@ -50,10 +51,14 @@ def traverseCGEN(node, f, var_dict):
             print("A: " , node)
 
 
-    # Assignment
-    if node.value == "=": 
-       assign_int(node, f, var_dict, sp_offset)     
-    
+    # ASSIGNMENTS
+    elif node.value == "=": 
+       assign_int(node, f, var_dict, sp_offset)
+        
+
+    # RESERVED OUTPUT FUNCTION
+    elif node.value == "output" and len(node.children) == 1 and node.children[0].value == "_args":
+        output_function(node, f, var_dict, sp_offset)
     
 
     for child in node.children:
