@@ -58,16 +58,28 @@ def assign_int(node, f, var_dict, sp_offset):
     for i in range(len(node.children)-1):
         child = node.children[i]
         
+        # LOCAL VARIABLE ASSIGNMENT
+        if child.value in var_dict:
         
-        # IN CASE OF ARRAY GET POSITION IN $a2 REGISTER AND SAVE IN THAT LOCATION
-        if len(child.children) == 1:
-            eval_int_array(child, f, var_dict, sp_offset)
-            f.write("sw $a1 0($a2)"+"\n")
+            # IN CASE OF ARRAY GET POSITION IN $a2 REGISTER AND SAVE IN THAT LOCATION
+            if len(child.children) == 1:
+                eval_int_array(child, f, var_dict, sp_offset)
+                f.write("sw $a1 0($a2)"+"\n")
+            
+            # STORE INDEX IN ITS CURRENT SP VALUE
+            else:
+                current_sp = var_dict[child.value]
+                f.write("sw $a1 " +str(sp_offset - current_sp)+"($sp)"+"\n")
         
-        # STORE INDEX IN ITS CURRENT SP VALUE
-        else:
-            current_sp = var_dict[child.value]
-            f.write("sw $a1 " +str(sp_offset - current_sp)+"($sp)"+"\n")
+        # GLOBAL VARIABLE ASSIGNMENT
+        #else:
+            
+        #    f.write("la $a0 " + child.value + "\n")
+        #    f.write("sw $a1 0($a0)\n")
+            
+            #print("Global assignment ", child.value)
+            #exit()
+            
 
 ###################
 # OUTPUT FUNCTION #
@@ -98,26 +110,29 @@ def eval_node(node, f, var_dict, sp_offset):
         
         # ARITHMETIC OPERATORS
         if compare_node_value(node.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
-            #eval_arithmetic(node, f, var_dict, sp_offset)
             eval_arithmetic(node, f, var_dict, 0, sp_offset)
         
         # LOOK FOR VARIABLE SP_OFFSET VALUE IN DICTIONARY
         else:
-            
-            
-            # TODO CHECK CASE FOR FUNCTION EVALUATION
-            
-            # INT [index]
-            if (len(node.children) == 1):                
-                eval_int_array(node, f, var_dict, sp_offset)
-                f.write("lw $a0 0($a2)\n")
-            
-            # INT
-            else:
-                current_sp = var_dict[node.value]
-                f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
-            
 
+            # LOCAL VARIABLE (LOOK IN STACK)
+            if node.value in var_dict:
+            
+                # INT [index]
+                if (len(node.children) == 1):                
+                    eval_int_array(node, f, var_dict, sp_offset)
+                    f.write("lw $a0 0($a2)\n")
+                
+                # INT
+                else:
+                    current_sp = var_dict[node.value]
+                    f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
+            
+            # LOOK FOR GLOBAL VARIABLE
+            # TODO LOOK FOR GLOBAL INT[]
+            else:
+                f.write("la $a0 " + node.value + "\n")
+                f.write("lw $a0 0($a0) \n")
 
 #################################################
 # EVALUATE INT[INDEX] (RETURNS POSITION IN $a2) #

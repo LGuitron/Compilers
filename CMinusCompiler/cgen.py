@@ -11,9 +11,7 @@ def codeGen(AST, filename):
     f.write("negindex: .asciiz \"Error de runtime: No se permiten indices negativos\" \n")
     f.write("outbounds: .asciiz \"Error de runtime: Indice fuera de rango\" \n")
     f.write(".text\n.globl main\n\nmain:\n")
-    
-    # TODO declare and store global variables
-    
+
     var_dict = {}
     traverseCGEN(AST, f, var_dict)
     add_runtime_errors(f)
@@ -24,10 +22,33 @@ def codeGen(AST, filename):
 # f         : File pointer to write generated code
 # var_dict  : Var_dictionary for storing variable names for the current scope with their corresponding sp_offset
 
-def traverseCGEN(node, f, var_dict):
+def traverseCGEN(node, f, var_dict):    
     
     global sp_offset
     
+    # ONLY TRAVERSE NODES INSIDE FUNCTIONS
+    for child in node.children:
+        if child.value == "fun_declaration":
+            for grandchild in child.children:
+                traverse_function_nodes(grandchild, f, var_dict)
+        
+        # GLOBAL VARIABLE DECLARATIONS
+        elif child.value == "int": 
+            
+            # INT
+            if len(child.children) == 1:
+                declare_int(child, f, var_dict, sp_offset)
+                sp_offset += 4
+        
+            # INT[SIZE]
+            elif len(child.children) == 2:
+                declare_int_array(child, f, var_dict, sp_offset)
+                arr_size = int(child.children[1].value)
+                sp_offset += 4 * arr_size
+    
+def traverse_function_nodes(node, f, var_dict):
+    
+    global sp_offset
     
     # INT DECLARATIONS
     if node.value == "int": 
@@ -58,8 +79,7 @@ def traverseCGEN(node, f, var_dict):
     
 
     for child in node.children:
-        traverseCGEN(child, f, var_dict)
-        
+        traverse_function_nodes(child, f, var_dict)
     
-        
-        
+    
+    
