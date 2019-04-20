@@ -70,15 +70,6 @@ def assign_int(node, f, var_dict, sp_offset):
             else:
                 current_sp = var_dict[child.value]
                 f.write("sw $a1 " +str(sp_offset - current_sp)+"($sp)"+"\n")
-        
-        # GLOBAL VARIABLE ASSIGNMENT
-        #else:
-            
-        #    f.write("la $a0 " + child.value + "\n")
-        #    f.write("sw $a1 0($a0)\n")
-            
-            #print("Global assignment ", child.value)
-            #exit()
             
 
 ###################
@@ -101,6 +92,8 @@ def output_function(node, f, var_dict, sp_offset):
 ################################
 def eval_node(node, f, var_dict, sp_offset):
     
+    
+    
     # RAW NUMBERS
     try: 
         value = int(node.value)
@@ -119,7 +112,7 @@ def eval_node(node, f, var_dict, sp_offset):
             if node.value in var_dict:
             
                 # INT [index]
-                if (len(node.children) == 1):                
+                if len(node.children) == 1:                 
                     eval_int_array(node, f, var_dict, sp_offset)
                     f.write("lw $a0 0($a2)\n")
                 
@@ -127,12 +120,32 @@ def eval_node(node, f, var_dict, sp_offset):
                 else:
                     current_sp = var_dict[node.value]
                     f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
-            
-            # LOOK FOR GLOBAL VARIABLE
-            # TODO LOOK FOR GLOBAL INT[]
-            else:
-                f.write("la $a0 " + node.value + "\n")
-                f.write("lw $a0 0($a0) \n")
+                    
+            # FUNCTION CALL
+            elif node.children[0].value == "_args":
+                
+                # STORE CALLER FP
+                f.write("sw $fp 0($sp)\n")
+                f.write("addiu $sp $sp -4\n")
+                
+                # TODO CHECK PARAMETERS IN INVERSE ORDER AND UPDATE VAR_DICT (COPY) FOR LOCAL VARIABLES
+                
+                
+                # STORE RETURN ADDRESS IN CALLEE
+                #f.write("move $fp $sp\n")
+                #f.write("sw $ra 0($sp)\n")
+                #f.write("addiu $sp $sp -4\n")
+                
+                # EVALUATE FUNCTION                  
+                f.write("jal " + node.value + "\n")
+                
+                #f.write("lw $ra 4($sp)\n")
+                #f.write("addiu $sp $sp 8\n")
+                #f.write("lw $fp 0($sp)\n")
+                #f.write("jr $ra\n")
+                
+                
+                #print("FUNCTION ", node )
 
 #################################################
 # EVALUATE INT[INDEX] (RETURNS POSITION IN $a2) #

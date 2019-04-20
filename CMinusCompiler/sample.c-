@@ -1,18 +1,21 @@
-int globalVar;
-int arr[10];
+int global;
+
+int mil(void)
+{
+    return 1000;
+}
+
+void printMil(void)
+{
+    int a;
+    a = 18;
+    /*global = 5;*/
+    output(mil());
+    output(a);
+}
 
 void main(void)
 {
-    int a;
-    int b[2];
-    b[0] = 1;
-    b[0] = a = b[1] = 5 - (b[0] * b[0]);
-    output(a);
-    output(b[0]);
-    output(b[1]);
-    output(globalVar);
-    globalVar = 7;
-    arr[globalVar] = 5;
-    output(globalVar);
-    output(arr[globalVar]);
+    /*output(mil());*/
+    printMil();
 }
