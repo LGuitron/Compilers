@@ -1,21 +1,19 @@
 int global;
 
-int mil(void)
-{
-    return 1000;
-}
-
 void printMil(void)
 {
     int a;
-    a = 18;
-    /*global = 5;*/
-    output(mil());
-    output(a);
+    int b;
+    
+    global = 10;
+    output(global);
 }
 
 void main(void)
 {
-    /*output(mil());*/
+    /*int a;
+    a = 5;
+    output(a);*/
     printMil();
+    output(global);
 }

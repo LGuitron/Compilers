@@ -10,18 +10,6 @@ sw $a0 0($sp)
 addiu $sp $sp -4
 j main
 
-mil:
-
-move $fp $sp
-sw $ra 0($sp)
-addiu $sp $sp -4
-li $a0 1000
-addiu $sp $sp 0
-lw $ra 4($sp)
-addiu $sp $sp 8
-lw $fp 0($sp)
-jr $ra
-
 printMil:
 
 move $fp $sp
@@ -30,24 +18,19 @@ addiu $sp $sp -4
 li $a0 0
 sw $a0 0($sp)
 addiu $sp $sp -4
-li $a0 18
-move $a1 $a0
-sw $a1 4($sp)
-li $v0 1
-sw $fp 0($sp)
+li $a0 0
+sw $a0 0($sp)
 addiu $sp $sp -4
-jal mil
-syscall
-li $v0 4
-la $a0 newline
-syscall
+li $a0 10
+move $a1 $a0
+sw $a1 20($sp)
 li $v0 1
-lw $a0 4($sp)
+lw $a0 20($sp)
 syscall
 li $v0 4
 la $a0 newline
 syscall
-addiu $sp $sp 4
+addiu $sp $sp 8
 lw $ra 4($sp)
 addiu $sp $sp 8
 lw $fp 0($sp)
@@ -58,6 +41,12 @@ main:
 sw $fp 0($sp)
 addiu $sp $sp -4
 jal printMil
+li $v0 1
+lw $a0 4($sp)
+syscall
+li $v0 4
+la $a0 newline
+syscall
 
 End:
 li $v0 10

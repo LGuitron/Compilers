@@ -69,12 +69,20 @@ def traverseCGEN(node, f, var_dict):
                 f.write("move $fp $sp\n")
                 f.write("sw $ra 0($sp)\n")
                 f.write("addiu $sp $sp -4\n")
-            
+                
+                # TODO add param count to sp_offset as well
+                
+                sp_offset += 8
             
                 for grandchild in child.children:
                     traverse_function_nodes(grandchild, f, var_dict)
-
+                sp_offset -= 8
+                
+                # POP THIS FUNCTION'S STACK
                 declaration_count = count_local_declarations(child)
+                sp_offset -= declaration_count*4
+                
+                # RETURN TO CALLER
                 f.write("addiu $sp $sp " + str(declaration_count*4) + "\n")
                 f.write("lw $ra " + str(4 + 4*0) + "($sp)\n")
                 f.write("addiu $sp $sp " + str(8 + 4*0)+ "\n")        # TODO FIX THIS VALUE DEPENDING ON PARAMS SIZE
