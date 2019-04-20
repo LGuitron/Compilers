@@ -53,21 +53,21 @@ def assign_int(node, f, var_dict, sp_offset):
     value_node = node.children[len(node.children)-1]
     eval_node(value_node, f, var_dict, sp_offset)
 
+    # COPY NODE VALUE'S VALUE TO $a1 REGISTER BEFORE EVALUATING THE REMAINING CHILDREN
+    f.write("move $a1 $a0\n")
     for i in range(len(node.children)-1):
         child = node.children[i]
         
         
         # IN CASE OF ARRAY GET POSITION IN $a2 REGISTER AND SAVE IN THAT LOCATION
         if len(child.children) == 1:
-            
-            f.write("move $a1 $a0\n")                            # COPY NODE VALUE'S VALUE TO $a1 REGISTER BEFORE EVALUATING INDEX
             eval_int_array(child, f, var_dict, sp_offset)
             f.write("sw $a1 0($a2)"+"\n")
         
         # STORE INDEX IN ITS CURRENT SP VALUE
         else:
             current_sp = var_dict[child.value]
-            f.write("sw $a0 " +str(sp_offset - current_sp)+"($sp)"+"\n")
+            f.write("sw $a1 " +str(sp_offset - current_sp)+"($sp)"+"\n")
 
 ###################
 # OUTPUT FUNCTION #
