@@ -1,5 +1,6 @@
 from RuntimeErrors import *
 from codeGeneration import *
+from copy import deepcopy
 
 # Global variable used for current sp_offset
 sp_offset = 0
@@ -69,13 +70,11 @@ def traverseCGEN(node, f, var_dict):
                 f.write("move $fp $sp\n")
                 f.write("sw $ra 0($sp)\n")
                 f.write("addiu $sp $sp -4\n")
-                
-                # TODO add param count to sp_offset as well
-                
+
                 sp_offset += 8
-            
+                local_dict = deepcopy(var_dict)
                 for grandchild in child.children:
-                    traverse_function_nodes(grandchild, f, var_dict)
+                    traverse_function_nodes(grandchild, f, local_dict)
                 sp_offset -= 8
                 
                 # POP THIS FUNCTION'S STACK
