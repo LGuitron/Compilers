@@ -99,7 +99,7 @@ def eval_node(node, f, var_dict, sp_offset):
         # ARITHMETIC OPERATORS
         if compare_node_value(node.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
             #eval_arithmetic(node, f, var_dict, sp_offset)
-            eval_arithmetic(node, f, var_dict, 0)
+            eval_arithmetic(node, f, var_dict, 0, sp_offset)
         
         # LOOK FOR VARIABLE SP_OFFSET VALUE IN DICTIONARY
         else:
@@ -110,7 +110,7 @@ def eval_node(node, f, var_dict, sp_offset):
             # INT [index]
             if (len(node.children) == 1):                
                 eval_int_array(node, f, var_dict, sp_offset)
-                f.write("lw $a0 ($a2)\n")
+                f.write("lw $a0 0($a2)\n")
             
             # INT
             else:
@@ -147,13 +147,14 @@ def eval_int_array(node, f, var_dict, sp_offset):
 ###################################
 # EVALUATE ARITHMETIC EXPRESSIONS #
 ###################################
-def eval_arithmetic(node, f, var_dict, sp_offset):
+def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
     
     operands     = []
     
     # List to determine how was the operand evaluated
-    # True - int literal
-    # False - Variable / Intermediate result in RAM
+    # 0 - int literal
+    # 1 - Variable or Intermediate result (+, -, ...)
+    # 2 - int[]
     eval_method = []   
     
     #for child in node.children:
@@ -164,32 +165,46 @@ def eval_arithmetic(node, f, var_dict, sp_offset):
         try: 
             value = int(value)
             operands.append(value)
-            eval_method.append(True)
+            eval_method.append(0)
             
         except ValueError:
             
             # RECURSIVE ARITHMETIC EXPRESSION
             if compare_node_value(value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
-                eval_arithmetic(child, f, var_dict, sp_offset - 4 * (i+1))
+                eval_arithmetic(child, f, var_dict, sp_offset - 4 * (i+1), abs_sp_offset)
                 operands.append(sp_offset - 4 * (i+1))
-                eval_method.append(False)
+                eval_method.append(1)
             
             # LOOK FOR SP_OFFSET
             else:
-                value = var_dict[value]
-                operands.append(value)
-                eval_method.append(False)
+                
+                # INT[INDEX]
+                if (len(child.children) == 1):    
+                    eval_int_array(child, f, var_dict, abs_sp_offset)
+                    operands.append(-1)
+                    eval_method.append(2)
+                
+                # INT VARIABLE
+                else:
+                    value = var_dict[value]
+                    operands.append(value)
+                    eval_method.append(1)
 
     # Load operands in temporal registries $t0 and $t1
     for i in range(len(node.children)):
+        
         child = node.children[i]
         # Integer literal
-        if eval_method[i]:         
+        if eval_method[i] == 0:         
             f.write("li $a" + str(i) + " " + str(operands[i]) + "\n")
         
-        # Variable or intermediate expression stored in RAM        
-        else:                           # Variable /
+        # Variable or intermediate expression stored in RAM   
+        elif eval_method[i] == 1:
             f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
+            
+        # Int[] 
+        else:
+            f.write("lw $a" + str(i) + " 0($a2)\n")
 
     f.write(arithmetic_dict[node.value]+ " $a0 $a0 $a1\n")
     f.write("sw $a0 " + str(sp_offset) + "($sp)\n")         # Store in main memory
