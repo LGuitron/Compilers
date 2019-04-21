@@ -2,18 +2,10 @@
 newline: .asciiz "\n" 
 negindex: .asciiz "Error de runtime: No se permiten indices negativos" 
 outbounds: .asciiz "Error de runtime: Indice fuera de rango" 
+global: .word 0 
 .text
 .globl main
 
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
 j main
 
 suma:
@@ -37,8 +29,10 @@ sw $ra 0($sp)
 addiu $sp $sp -4
 li $a0 5
 move $a1 $a0
-sw $a1 16($sp)
-lw $a0 16($sp)
+la $a0 global
+sw $a1 0($a0)
+la $a0 global
+lw $a0 0($a0) 
 lw $ra 4($sp)
 addiu $sp $sp 8
 lw $fp 0($sp)
@@ -85,6 +79,17 @@ li $v0 1
 sw $fp 0($sp)
 addiu $sp $sp -4
 jal globalfunc
+syscall
+li $v0 4
+la $a0 newline
+syscall
+li $a0 4
+move $a1 $a0
+la $a0 global
+sw $a1 0($a0)
+li $v0 1
+la $a0 global
+lw $a0 0($a0) 
 syscall
 li $v0 4
 la $a0 newline

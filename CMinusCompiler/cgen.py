@@ -12,8 +12,8 @@ def codeGen(AST, filename):
     f.write(".data\nnewline: .asciiz \"\\n\" \n")
     f.write("negindex: .asciiz \"Error de runtime: No se permiten indices negativos\" \n")
     f.write("outbounds: .asciiz \"Error de runtime: Indice fuera de rango\" \n")
-    f.write(".text\n.globl main\n\n")
     declare_global_variables(AST, f, var_dict)
+    f.write(".text\n.globl main\n\n")
     
     # START IN MAIN FUNCTION AFTER DECLARING GLOBALS
     f.write("j main\n")                 
@@ -29,7 +29,7 @@ def codeGen(AST, filename):
 
 # FUNCTION FOR IDENTIFYING GLOBAL VARIABLES
 def declare_global_variables(node, f, var_dict):
-    global sp_offset
+    
     for child in node.children:
 
         # GLOBAL VARIABLE DECLARATIONS
@@ -37,17 +37,15 @@ def declare_global_variables(node, f, var_dict):
             
             # INT
             if len(child.children) == 1:
-                sp_offset -= 4
-                declare_int(child, f, var_dict, sp_offset)
-                sp_offset += 8
-                
-                #sp_offset += 4
-        
-            # INT[SIZE]
-            elif len(child.children) == 2:
-                declare_int_array(child, f, var_dict, sp_offset)
-                arr_size = int(child.children[1].value)
-                sp_offset += 4 * arr_size
+                f.write(child.children[0].value+ ": .word 0 \n")
+    
+        # TODO INT[SIZE] with .space
+        #elif len(child.children) == 2:
+        #    declare_int_array(child, f, var_dict, sp_offset)
+        #    arr_size = int(child.children[1].value)
+        #    sp_offset += 4 * arr_size
+    
+
 
 
 # FUNCTION FOR IDENTIFYING FUNCTION DECLARATIONS IN THE GLOBAL SCOPE
@@ -104,7 +102,6 @@ def traverseCGEN(node, f, var_dict):
 def traverse_function_nodes(node, f, var_dict):
 
     global sp_offset
-    print("S: " , sp_offset)
     
     # INT DECLARATIONS
     if node.value == "int": 

@@ -72,9 +72,9 @@ def assign_int(node, f, var_dict, sp_offset):
                 f.write("sw $a1 " +str(sp_offset - current_sp)+"($sp)"+"\n")
                 
         # GLOBAL VARIABLE ASSIGNMENT
-        #else:
-        #    f.write("la $a0 " + child.value + "\n")
-        #    f.write("sw $a1 0($a0)\n")
+        else:
+            f.write("la $a0 " + child.value + "\n")
+            f.write("sw $a1 0($a0)\n")
     
 ###################
 # OUTPUT FUNCTION #
@@ -125,7 +125,7 @@ def eval_node(node, f, var_dict, sp_offset):
                     
             # FUNCTION CALL
             # TODO RECEIVE INT[] AS ARGUMENTS
-            elif node.children[0].value == "_args":
+            elif len(node.children) > 0 and node.children[0].value == "_args":
                 
                 # STORE CALLER FP
                 f.write("sw $fp 0($sp)\n")
@@ -143,6 +143,11 @@ def eval_node(node, f, var_dict, sp_offset):
                 
                 # JUMP TO FUNCTION                  
                 f.write("jal " + node.value + "\n")
+                
+            # LOOK FOR GLOBAL VARIABLE
+            else:
+                f.write("la $a0 " + node.value + "\n")
+                f.write("lw $a0 0($a0) \n")
 
 
 #################################################

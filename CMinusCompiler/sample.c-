@@ -27,4 +27,7 @@ void main(void)
     /*c[1]   = 11;*/
     
     output(globalfunc());
+    
+    global = 4;
+    output(global);
 }
