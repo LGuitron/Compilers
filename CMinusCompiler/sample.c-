@@ -1,20 +1,29 @@
 int global;
+int c[2];
 
-void printGlobal(void)
+int suma(int a, int b)
 {
-    int global;
-    global = 5 * 7;
-    output(global);
+    /*return a+b;*/
+    return a+b;
 }
 
-void prtGlob(void)
+int globalfunc(void)
 {
-    output(global);
+    return global * c[1];
 }
 
 void main(void)
 {
-    global = 10;
-    printGlobal();
-    prtGlob();
+    int a;
+    int b;
+    
+    a = 4;
+    output(suma(3, 7));
+    b = 3;
+    output(a+b);
+    
+    global = 5;
+    c[1]   = 11;
+    
+    output(globalfunc());
 }

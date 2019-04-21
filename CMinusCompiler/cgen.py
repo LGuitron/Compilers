@@ -66,32 +66,45 @@ def traverseCGEN(node, f, var_dict):
                 
             # OTHER FUNCTIONS
             else:
+                
                 # Add code for returning from function call
                 f.write("move $fp $sp\n")
                 f.write("sw $ra 0($sp)\n")
                 f.write("addiu $sp $sp -4\n")
+                
+                
+                # ADD PARAMETERS TO THE LOCAL DICTIONARY
+                local_dict  = deepcopy(var_dict)
+                params_node = child.children[2]
+                
+                for i in range(len(params_node.children) -1, -1, -1):
+                    current_param = params_node.children[i]
+                    local_dict[current_param.children[0].value] = sp_offset
+                    sp_offset += 4
 
-                sp_offset += 8
-                local_dict = deepcopy(var_dict)
-                for grandchild in child.children:
-                    traverse_function_nodes(grandchild, f, local_dict)
-                sp_offset -= 8
+                sp_offset += 4
+                
+                
+                
+                # ITERATE OVER COMPOUND STATEMENT ONLY
+                traverse_function_nodes(child.children[3], f, local_dict)
+
+                
                 
                 # POP THIS FUNCTION'S STACK
                 declaration_count = count_local_declarations(child)
-                sp_offset -= declaration_count*4
-                
+                sp_offset         -= (8 + declaration_count*4)
+
                 # RETURN TO CALLER
-                f.write("addiu $sp $sp " + str(declaration_count*4) + "\n")
-                f.write("lw $ra " + str(4 + 4*0) + "($sp)\n")
-                f.write("addiu $sp $sp " + str(8 + 4*0)+ "\n")        # TODO FIX THIS VALUE DEPENDING ON PARAMS SIZE
+                f.write("lw $ra 4($sp)\n")
+                f.write("addiu $sp $sp " + str(8 + 4*declaration_count)+ "\n")
                 f.write("lw $fp 0($sp)\n")
                 f.write("jr $ra\n")
                 
 
 # FUNCTION FOR TRAVERSING ALL NODES INSIDE A FUNCTION    
 def traverse_function_nodes(node, f, var_dict):
-    
+
     global sp_offset
     
     # INT DECLARATIONS
@@ -119,6 +132,7 @@ def traverse_function_nodes(node, f, var_dict):
 
     # CUSTOM FUNCTION CALL
     elif len(node.children) == 1 and node.children[0].value == "_args":
+        print(node)
         eval_node(node, f, var_dict, sp_offset)
     
     
@@ -151,4 +165,13 @@ def count_local_declarations(node):
     for child in node.children:
         new_args += count_local_declarations(child)
     return new_args
+
+# HELPER FUNCTION TO ADD EVALUATE FUNCTION PARAMETERS 
+#def eval_function_parameters(node, f, var_dict):
+#    for child in node.children:
+#        eval_
+        
+        #var_dict[child.value]
+    
+    
     

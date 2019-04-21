@@ -92,8 +92,6 @@ def output_function(node, f, var_dict, sp_offset):
 ################################
 def eval_node(node, f, var_dict, sp_offset):
     
-    
-    
     # RAW NUMBERS
     try: 
         value = int(node.value)
@@ -107,7 +105,7 @@ def eval_node(node, f, var_dict, sp_offset):
         
         # LOOK FOR VARIABLE SP_OFFSET VALUE IN DICTIONARY
         else:
-
+            
             # LOCAL VARIABLE (LOOK IN STACK)
             if node.value in var_dict:
             
@@ -122,30 +120,30 @@ def eval_node(node, f, var_dict, sp_offset):
                     f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
                     
             # FUNCTION CALL
-            elif node.children[0].value == "_args":
+            # TODO RECEIVE INT[] AS ARGUMENTS
+            elif node.value == "void" or node.children[0].value == "_args":
                 
                 # STORE CALLER FP
                 f.write("sw $fp 0($sp)\n")
                 f.write("addiu $sp $sp -4\n")
+                sp_offset += 4
+                #print("Fcall: ", node)
                 
-                # TODO CHECK PARAMETERS IN INVERSE ORDER AND UPDATE VAR_DICT (COPY) FOR LOCAL VARIABLES
+                #param_dict = var_dict[node.value]
+                #print(param_dict)
                 
+                if node.value != "void":
+
+                    # CHECK PARAMETERS IN INVERSE ORDER AND UPDATE
+                    for i in range(len(node.children[0].children)-1, -1, -1):
+                        param = node.children[0].children[i]
+                        eval_node(param, f, var_dict, sp_offset)
+                        f.write("sw $a0 0($sp)\n")
+                        f.write("addiu $sp $sp -4\n")
                 
-                # STORE RETURN ADDRESS IN CALLEE
-                #f.write("move $fp $sp\n")
-                #f.write("sw $ra 0($sp)\n")
-                #f.write("addiu $sp $sp -4\n")
-                
-                # EVALUATE FUNCTION                  
+                # JUMP TO FUNCTION                  
                 f.write("jal " + node.value + "\n")
-                
-                #f.write("lw $ra 4($sp)\n")
-                #f.write("addiu $sp $sp 8\n")
-                #f.write("lw $fp 0($sp)\n")
-                #f.write("jr $ra\n")
-                
-                
-                #print("FUNCTION ", node )
+
 
 #################################################
 # EVALUATE INT[INDEX] (RETURNS POSITION IN $a2) #
@@ -221,14 +219,18 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
     # Load operands in temporal registries $t0 and $t1
     for i in range(len(node.children)):
         
+        
         child = node.children[i]
         # Integer literal
-        if eval_method[i] == 0:         
+        if eval_method[i] == 0:        
             f.write("li $a" + str(i) + " " + str(operands[i]) + "\n")
         
         # Variable or intermediate expression stored in RAM   
         elif eval_method[i] == 1:
-            f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
+            #print(operands[i] , " - " ,abs_sp_offset)
+            #f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
+            f.write("lw $a" + str(i) + " " + str(abs_sp_offset - operands[i]) +"($sp)\n")
+            
             
         # Int[] 
         else:
