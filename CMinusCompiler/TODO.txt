@@ -1,1 +1,5 @@
-Semantic : Check global variable declarations sequentially
+2. Send int[] as function parameters
+3. Manage local variable declaration in inner compound statements
+4. Generate code for if
+5. Generate code for while
+6. Generate code for input

@@ -3,13 +3,20 @@ int globalarr[2];
 
 int suma(int a, int b)
 {
+    int y;
     return a+b;
 }
 
-int globalfunc(void)
+int globalfunc(int a, int b, int c)
 {
+    int g;
     global = 5;    
     return global;
+}
+
+void arrmanagement(void)
+{
+    globalarr[0] = 14;
 }
 
 void main(void)
@@ -23,7 +30,7 @@ void main(void)
     output(a+b);
     
     
-    output(globalfunc());
+    output(globalfunc(1,3,4));
     
     globalarr[1] = 4;
     
@@ -31,4 +38,6 @@ void main(void)
     globalarr[1] = 17;
     output(global);
     output(globalarr[1]);
+    arrmanagement();
+    output(globalarr[0]);
 }

@@ -85,12 +85,23 @@ def traverseCGEN(node, f, var_dict):
                 
                 
                 # POP THIS FUNCTION'S STACK
-                declaration_count = count_local_declarations(child)
-                sp_offset         -= (8 + declaration_count*4)
+                #print(child)
+                local_declarations = count_local_declarations(child.children[3])
+                
+                #local
+                
+                
+                sp_offset -= 8 
+                sp_offset -= local_declarations*4
+                sp_offset -= len(params_node.children)*4
+                
+                #print(declaration_count)
                 
                 # RETURN TO CALLER
+                f.write("addiu $sp $sp " + str(4*local_declarations)+ "\n")      # POP STACK FOR LOCAL DECLARATIONS
                 f.write("lw $ra 4($sp)\n")
-                f.write("addiu $sp $sp " + str(8 + 4*declaration_count)+ "\n")
+                f.write("addiu $sp $sp " + str(8 + 4*len(params_node.children))+ "\n")
+                #f.write("addiu $sp $sp 8\n")                                    # MOVE BACK FOR $ra and $fp
                 f.write("lw $fp 0($sp)\n")
                 f.write("jr $ra\n")
                 
