@@ -70,8 +70,12 @@ def assign_int(node, f, var_dict, sp_offset):
             else:
                 current_sp = var_dict[child.value]
                 f.write("sw $a1 " +str(sp_offset - current_sp)+"($sp)"+"\n")
-            
-
+                
+        # GLOBAL VARIABLE ASSIGNMENT
+        #else:
+        #    f.write("la $a0 " + child.value + "\n")
+        #    f.write("sw $a1 0($a0)\n")
+    
 ###################
 # OUTPUT FUNCTION #
 ###################
@@ -121,22 +125,18 @@ def eval_node(node, f, var_dict, sp_offset):
                     
             # FUNCTION CALL
             # TODO RECEIVE INT[] AS ARGUMENTS
-            elif node.value == "void" or node.children[0].value == "_args":
+            elif node.children[0].value == "_args":
                 
                 # STORE CALLER FP
                 f.write("sw $fp 0($sp)\n")
                 f.write("addiu $sp $sp -4\n")
                 sp_offset += 4
-                #print("Fcall: ", node)
-                
-                #param_dict = var_dict[node.value]
-                #print(param_dict)
-                
-                if node.value != "void":
 
-                    # CHECK PARAMETERS IN INVERSE ORDER AND UPDATE
-                    for i in range(len(node.children[0].children)-1, -1, -1):
-                        param = node.children[0].children[i]
+                # CHECK PARAMETERS IN INVERSE ORDER AND UPDATE
+                for i in range(len(node.children[0].children)-1, -1, -1):
+                    param = node.children[0].children[i]
+                    
+                    if param.value != "void":
                         eval_node(param, f, var_dict, sp_offset)
                         f.write("sw $a0 0($sp)\n")
                         f.write("addiu $sp $sp -4\n")
@@ -227,8 +227,6 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
         
         # Variable or intermediate expression stored in RAM   
         elif eval_method[i] == 1:
-            #print(operands[i] , " - " ,abs_sp_offset)
-            #f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
             f.write("lw $a" + str(i) + " " + str(abs_sp_offset - operands[i]) +"($sp)\n")
             
             

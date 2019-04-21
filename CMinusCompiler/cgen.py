@@ -37,8 +37,11 @@ def declare_global_variables(node, f, var_dict):
             
             # INT
             if len(child.children) == 1:
+                sp_offset -= 4
                 declare_int(child, f, var_dict, sp_offset)
-                sp_offset += 4
+                sp_offset += 8
+                
+                #sp_offset += 4
         
             # INT[SIZE]
             elif len(child.children) == 2:
@@ -61,8 +64,7 @@ def traverseCGEN(node, f, var_dict):
             
             # MAIN FUNCTION
             if function_name == "main":
-                for grandchild in child.children:
-                    traverse_function_nodes(grandchild, f, var_dict)
+                traverse_function_nodes(child.children[3], f, var_dict)
                 
             # OTHER FUNCTIONS
             else:
@@ -72,7 +74,6 @@ def traverseCGEN(node, f, var_dict):
                 f.write("sw $ra 0($sp)\n")
                 f.write("addiu $sp $sp -4\n")
                 
-                
                 # ADD PARAMETERS TO THE LOCAL DICTIONARY
                 local_dict  = deepcopy(var_dict)
                 params_node = child.children[2]
@@ -81,10 +82,7 @@ def traverseCGEN(node, f, var_dict):
                     current_param = params_node.children[i]
                     local_dict[current_param.children[0].value] = sp_offset
                     sp_offset += 4
-
                 sp_offset += 4
-                
-                
                 
                 # ITERATE OVER COMPOUND STATEMENT ONLY
                 traverse_function_nodes(child.children[3], f, local_dict)
@@ -94,7 +92,7 @@ def traverseCGEN(node, f, var_dict):
                 # POP THIS FUNCTION'S STACK
                 declaration_count = count_local_declarations(child)
                 sp_offset         -= (8 + declaration_count*4)
-
+                
                 # RETURN TO CALLER
                 f.write("lw $ra 4($sp)\n")
                 f.write("addiu $sp $sp " + str(8 + 4*declaration_count)+ "\n")
@@ -106,6 +104,7 @@ def traverseCGEN(node, f, var_dict):
 def traverse_function_nodes(node, f, var_dict):
 
     global sp_offset
+    print("S: " , sp_offset)
     
     # INT DECLARATIONS
     if node.value == "int": 
@@ -165,13 +164,3 @@ def count_local_declarations(node):
     for child in node.children:
         new_args += count_local_declarations(child)
     return new_args
-
-# HELPER FUNCTION TO ADD EVALUATE FUNCTION PARAMETERS 
-#def eval_function_parameters(node, f, var_dict):
-#    for child in node.children:
-#        eval_
-        
-        #var_dict[child.value]
-    
-    
-    

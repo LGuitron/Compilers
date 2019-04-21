@@ -9,7 +9,8 @@ int suma(int a, int b)
 
 int globalfunc(void)
 {
-    return global * c[1];
+    global = 5;
+    return global;
 }
 
 void main(void)
@@ -22,8 +23,8 @@ void main(void)
     b = 3;
     output(a+b);
     
-    global = 5;
-    c[1]   = 11;
+    /*global = 5;*/
+    /*c[1]   = 11;*/
     
     output(globalfunc());
 }
