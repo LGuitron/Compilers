@@ -74,9 +74,48 @@ addiu $sp $sp -4
 li $a0 0
 sw $a0 0($sp)
 addiu $sp $sp -4
+li $a0 0
+sw $a0 0($sp)
+addiu $sp $sp -4
+li $a0 1
+li $a1 2
+add $a0 $a0 $a1
+sw $a0 -8($sp)
+li $a0 3
+li $a1 4
+add $a0 $a0 $a1
+sw $a0 -12($sp)
+lw $a0 -8($sp)
+lw $a1 -12($sp)
+add $a0 $a0 $a1
+sw $a0 -4($sp)
+li $a0 5
+li $a1 6
+add $a0 $a0 $a1
+sw $a0 -12($sp)
+li $a0 7
+li $a1 8
+add $a0 $a0 $a1
+sw $a0 -16($sp)
+lw $a0 -12($sp)
+lw $a1 -16($sp)
+add $a0 $a0 $a1
+sw $a0 -8($sp)
+lw $a0 -4($sp)
+lw $a1 -8($sp)
+add $a0 $a0 $a1
+sw $a0 0($sp)
+move $t0 $a0
+sw $t0 4($sp)
+li $v0 1
+lw $a0 4($sp)
+syscall
+li $v0 4
+la $a0 newline
+syscall
 li $a0 4
 move $t0 $a0
-sw $t0 8($sp)
+sw $t0 12($sp)
 li $v0 1
 sw $fp 0($sp)
 addiu $sp $sp -4
@@ -93,10 +132,10 @@ la $a0 newline
 syscall
 li $a0 3
 move $t0 $a0
-sw $t0 4($sp)
+sw $t0 8($sp)
 li $v0 1
-lw $a0 8($sp)
-lw $a1 4($sp)
+lw $a0 12($sp)
+lw $a1 8($sp)
 add $a0 $a0 $a1
 sw $a0 0($sp)
 syscall

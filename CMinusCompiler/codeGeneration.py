@@ -242,7 +242,7 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
                 # INT VARIABLE
                 else:
                     value = var_dict[value]
-                    operands.append(value)
+                    operands.append(abs_sp_offset - value)
                     eval_method.append(1)
 
     # Load operands in temporal registries $t0 and $t1
@@ -256,7 +256,8 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
         
         # Variable or intermediate expression stored in RAM   
         elif eval_method[i] == 1:
-            f.write("lw $a" + str(i) + " " + str(abs_sp_offset - operands[i]) +"($sp)\n")
+            f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
+            #f.write("lw $a" + str(i) + " " + str(abs_sp_offset - operands[i]) +"($sp)\n")
             
             
         # Int[] 
