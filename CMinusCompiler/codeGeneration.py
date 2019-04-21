@@ -252,17 +252,16 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
         child = node.children[i]
         # Integer literal
         if eval_method[i] == 0:        
-            f.write("li $a" + str(i) + " " + str(operands[i]) + "\n")
+            f.write("li $t" + str(i) + " " + str(operands[i]) + "\n")
         
         # Variable or intermediate expression stored in RAM   
         elif eval_method[i] == 1:
-            f.write("lw $a" + str(i) + " " + str(operands[i]) +"($sp)\n")
-            #f.write("lw $a" + str(i) + " " + str(abs_sp_offset - operands[i]) +"($sp)\n")
-            
+            f.write("lw $t" + str(i) + " " + str(operands[i]) +"($sp)\n")
             
         # Int[] 
         else:
-            f.write("lw $a" + str(i) + " 0($a2)\n")
+            f.write("lw $t" + str(i) + " 0($a2)\n")
 
-    f.write(arithmetic_dict[node.value]+ " $a0 $a0 $a1\n")
+    #f.write(arithmetic_dict[node.value]+ " $a0 $a0 $a1\n")
+    f.write(arithmetic_dict[node.value]+ " $a0 $t0 $t1\n")
     f.write("sw $a0 " + str(sp_offset) + "($sp)\n")         # Store in main memory

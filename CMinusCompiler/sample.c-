@@ -1,4 +1,24 @@
 void main(void)
 {
-    int a;
+    int a[10];
+    int b;
+    int c;
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    int i;
+    
+    b = 1;
+    c = 2;
+    d = 3;
+    e = 4;
+    a[4] = 5;
+    g = 6;
+    h = 7;
+    a[5] = 8;
+    
+    i = (((b+c)+(d+e)) + ((a[4]+g) + (h+a[5]))) * 5;
+    output(i);    
 }
