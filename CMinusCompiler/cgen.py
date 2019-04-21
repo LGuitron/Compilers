@@ -39,13 +39,10 @@ def declare_global_variables(node, f, var_dict):
             if len(child.children) == 1:
                 f.write(child.children[0].value+ ": .word 0 \n")
     
-        # TODO INT[SIZE] with .space
-        #elif len(child.children) == 2:
-        #    declare_int_array(child, f, var_dict, sp_offset)
-        #    arr_size = int(child.children[1].value)
-        #    sp_offset += 4 * arr_size
-    
-
+            # TODO INT[SIZE] with .space
+            elif len(child.children) == 2:
+                arr_size = int(child.children[1].value)
+                f.write(child.children[0].value+ ": .space " + str(4*arr_size) + "\n")
 
 
 # FUNCTION FOR IDENTIFYING FUNCTION DECLARATIONS IN THE GLOBAL SCOPE
@@ -128,7 +125,6 @@ def traverse_function_nodes(node, f, var_dict):
 
     # CUSTOM FUNCTION CALL
     elif len(node.children) == 1 and node.children[0].value == "_args":
-        print(node)
         eval_node(node, f, var_dict, sp_offset)
     
     

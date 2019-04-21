@@ -1,15 +1,14 @@
 int global;
-int c[2];
+int globalarr[2];
 
 int suma(int a, int b)
 {
-    /*return a+b;*/
     return a+b;
 }
 
 int globalfunc(void)
 {
-    global = 5;
+    global = 5;    
     return global;
 }
 
@@ -23,11 +22,13 @@ void main(void)
     b = 3;
     output(a+b);
     
-    /*global = 5;*/
-    /*c[1]   = 11;*/
     
     output(globalfunc());
     
+    globalarr[1] = 4;
+    
     global = 4;
+    globalarr[1] = 17;
     output(global);
+    output(globalarr[1]);
 }
