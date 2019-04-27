@@ -1,26 +1,7 @@
 int global;
-int globalarr[10];
+int globalarr[2];
 
-void function(int a[])
-{
-    /*a[1] = 17;*/
-}
-
-
-void main(void)
-{
-    global = 5;
-    globalarr[4] = 3;
-    globalarr[3] = 2;
-    
-    output(global);
-    output(globalarr[4]);
-    output(globalarr[3]);
-    
-}
-
-
-/*int suma(int a, int b)
+int suma(int a, int b)
 {
     int y;
     return a+b;
@@ -70,7 +51,7 @@ void main(void)
     int b;
     
     a = 4;
-    output(suma(3, 7));
+    output(suma(suma(1,5), 7));
     b = 3;
     output(a+b);
     
@@ -87,4 +68,3 @@ void main(void)
     output(globalarr[0]);
     largeoperations();
 }
-*/

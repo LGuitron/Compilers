@@ -130,7 +130,7 @@ def eval_node(node, f, var_dict, sp_offset):
                     eval_int_array(node, f, var_dict, sp_offset)
                     f.write("lw $a0 0($a2)\n")
                 
-                # INT OR INT[] (without index)
+                # INT
                 else:
                     current_sp = var_dict[node.value]
                     f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
