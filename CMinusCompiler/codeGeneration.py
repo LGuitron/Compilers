@@ -130,13 +130,19 @@ def eval_node(node, f, var_dict, sp_offset):
                     eval_int_array(node, f, var_dict, sp_offset)
                     f.write("lw $a0 0($a2)\n")
                 
-                # INT OR INT[] (without index)
+                # INT OR INT[] (without index as it was passed as parameter)
                 else:
                     current_sp = var_dict[node.value]
-                    f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
+                    
+                    # INT
+                    if type(current_sp) is int:
+                        f.write("lw $a0 " +str(sp_offset - current_sp)+"($sp)" + "\n")
+                        
+                    # INT[]
+                    else:
+                        f.write("lw $a0 " +str(sp_offset - current_sp[0])+"($sp)" + "\n")
                     
             # FUNCTION CALL
-            # TODO RECEIVE INT[] AS ARGUMENTS
             elif len(node.children) > 0 and node.children[0].value == "_args":
                 
                 # STORE CALLER FP
@@ -146,10 +152,21 @@ def eval_node(node, f, var_dict, sp_offset):
 
                 # CHECK PARAMETERS IN INVERSE ORDER AND UPDATE
                 for i in range(len(node.children[0].children)-1, -1, -1):
-                    param = node.children[0].children[i]
-                    
+                    param = node.children[0].children[i]                    
                     if param.value != "void":
-                        eval_node(param, f, var_dict, sp_offset)
+
+                        # INT
+                        if param.value not in var_dict or type(var_dict[param.value]) is int:
+                            eval_node(param, f, var_dict, sp_offset)
+
+                        # TODO CHECK IF THIS IS RIGHT INT[]
+                        else:
+                            
+                            current_sp = var_dict[param.value][0]
+                            current_sp = (sp_offset + 4*i) - current_sp
+                            f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
+                            f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
+                           
                         f.write("sw $a0 0($sp)\n")
                         f.write("addiu $sp $sp -4\n")
                 
@@ -179,25 +196,41 @@ def eval_node(node, f, var_dict, sp_offset):
 #################################################
 def eval_int_array(node, f, var_dict, sp_offset):
 
+    
     current_sp = var_dict[node.value]
     arr_size   = current_sp[1]
     current_sp = current_sp[0] 
     
-    # EVALUATE INDEX OF ARRAY
-    eval_node(node.children[0], f, var_dict, sp_offset)
-    
-    # CHECK THAT INDEX IS IN BOUNDS
-    f.write("blt $a0 $zero Negindexerror\n")                         # NEGATIVE INDEX ERROR
-    f.write("li $a2 " + str(arr_size) + "\n")                        # LOAD ARRAY SIZE INTO $a2 REGISTER
-    f.write("bge $a0 $a2 Outboundserror\n")                          # OUT OF BOUNDS ERROR
-    
-    # INDEX IS OK
-    f.write("move $a2 $sp\n")                                        # STORE CURRENT STACK POINTER IN $a2
-    f.write("addiu $a2 $a2 " + str(sp_offset - current_sp) + "\n")   # ADD SP_OFFSET OF ARRAY START TO $a2 REGISTER
-    f.write("li $a3 4\n")                                            # LOAD CONSTANT 4 IN REGISTER
-    f.write("mul $a0 $a0 $a3\n")                                     # MULTPLY INDEX VALUE BY 4
-    f.write("sub $a2 $a2 $a0\n")                                     # SUBSTRACT THIS VALUE TO $a2 to get to the right position
-    
+    # Array passed by reference to a function (value in sp_offset)
+    if arr_size == -1:
+        
+        # EVALUATE INDEX OF ARRAY
+        eval_node(node.children[0], f, var_dict, sp_offset)
+        
+        f.write("move $a2 $sp\n")                                        # STORE CURRENT STACK POINTER IN $A2
+        f.write("addiu $a2 $a2 " + str(sp_offset - current_sp) + "\n")   # GET ADDRESS OF ARRAY ADDRESS IN $A2
+        f.write("lw $a2 0($a2)\n")                                       # LOAD ARRAY START ADDRESS IN $A2
+        
+        f.write("li $a3 4\n")                                            # LOAD CONSTANT 4 IN REGISTER
+        f.write("mul $a0 $a0 $a3\n")                                     # MULTPLY INDEX VALUE BY 4
+        f.write("sub $a2 $a2 $a0\n")                                     # SUBSTRACT THIS VALUE TO $a2 to get to the right position
+        
+        
+    else:
+        # EVALUATE INDEX OF ARRAY
+        eval_node(node.children[0], f, var_dict, sp_offset)
+        
+        # CHECK THAT INDEX IS IN BOUNDS
+        f.write("blt $a0 $zero Negindexerror\n")                         # NEGATIVE INDEX ERROR
+        f.write("li $a2 " + str(arr_size) + "\n")                        # LOAD ARRAY SIZE INTO $a2 REGISTER
+        f.write("bge $a0 $a2 Outboundserror\n")                          # OUT OF BOUNDS ERROR
+        
+        # INDEX IS OK
+        f.write("move $a2 $sp\n")                                        # STORE CURRENT STACK POINTER IN $a2
+        f.write("addiu $a2 $a2 " + str(sp_offset - current_sp) + "\n")   # ADD SP_OFFSET OF ARRAY START TO $a2 REGISTER
+        f.write("li $a3 4\n")                                            # LOAD CONSTANT 4 IN REGISTER
+        f.write("mul $a0 $a0 $a3\n")                                     # MULTPLY INDEX VALUE BY 4
+        f.write("sub $a2 $a2 $a0\n")                                     # SUBSTRACT THIS VALUE TO $a2 to get to the right position
 
 ###################################
 # EVALUATE ARITHMETIC EXPRESSIONS #

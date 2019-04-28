@@ -75,17 +75,18 @@ def traverseCGEN(node, f, var_dict):
                 
                 for i in range(len(params_node.children) -1, -1, -1):
                     current_param = params_node.children[i]
-                    local_dict[current_param.children[0].value] = sp_offset
+                    
+                    # INT[]
+                    if current_param.value == "int[]":
+                        local_dict[current_param.children[0].value] = (sp_offset, -1)
+                    else:
+                        local_dict[current_param.children[0].value] = sp_offset
                     sp_offset += 4
                 sp_offset += 4
                 
+                
                 # ITERATE OVER COMPOUND STATEMENT ONLY
                 traverse_function_nodes(child.children[3], f, local_dict)
-
-                
-                
-                # POP THIS FUNCTION'S STACK
-                #print(child)
                 local_declarations = count_local_declarations(child.children[3])
                 
                 #local

@@ -3,3 +3,9 @@
 4. Generate code for if
 5. Generate code for while
 6. Generate code for input
+
+----------
+
+Optional:
+
+Limit array upper bound when array is passed as parameter
