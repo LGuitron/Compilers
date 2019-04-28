@@ -127,6 +127,9 @@ addiu $sp $sp -4
 li $a0 0
 sw $a0 0($sp)
 addiu $sp $sp -4
+li $a0 0
+sw $a0 0($sp)
+addiu $sp $sp -4
 li $a0 1
 move $t0 $a0
 li $a0 0
@@ -212,9 +215,14 @@ syscall
 li $v0 4
 la $a0 newline0
 syscall
+li $a0 3
+move $t0 $a0
+sw $t0 4($sp)
 li $v0 1
-la $a0 global
-lw $a0 0($a0) 
+lw $a0 4($sp)
+blt $a0 $zero Negindexerror
+li $a2 3
+bge $a0 $a2 Outboundserror
 li $a1 4
 mul $a0 $a0 $a1
 la $a1 globalarr
@@ -231,7 +239,7 @@ blt $a0 $zero Negindexerror
 li $a2 3
 bge $a0 $a2 Outboundserror
 move $a2 $sp
-addiu $a2 $a2 12
+addiu $a2 $a2 16
 li $a3 4
 mul $a0 $a0 $a3
 sub $a2 $a2 $a0

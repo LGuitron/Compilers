@@ -25,6 +25,7 @@ void recarr(int h[], int j)
 void main(void)
 {
     int a[3];
+    int c;
     
     globalarr[0] = 1;
     globalarr[1] = 2;
@@ -36,7 +37,10 @@ void main(void)
     output((((1+2)+(3+4)) + ((5+6) + (7+8)))*10);
     output(global);
     
-    output(globalarr[global]);
+    c = 3;
+    
+    
+    output(globalarr[c]);
     output(a[global]);
 }
 

@@ -1,6 +1,8 @@
 from TypeChecks import compare_node_value
 
-global_arrays = []                 # List of global_array names, used to distinguish from global ints
+#global_arrays = []                 # List of global_array names, used to distinguish from global ints
+
+global_arrays = {}                  # Dictionary containing global arrays with their corresponding sizes
 
 ######################################
 # ARITHMETIC INSTRUCTIONS DICTIONARY #
@@ -209,7 +211,16 @@ def eval_node(node, f, var_dict, sp_offset):
                 
                 #INT[]
                 if len(node.children) == 1:
+
+                    arr_size = global_arrays[node.value]
                     eval_node(node.children[0], f, var_dict, sp_offset)        # NODE INDEX IN $a0 register
+                    
+                    # CHECK THAT INDEX IS IN BOUNDS
+                    f.write("blt $a0 $zero Negindexerror\n")                   # NEGATIVE INDEX ERROR
+                    f.write("li $a2 " + str(arr_size) + "\n")                  # LOAD ARRAY SIZE INTO $a2 REGISTER
+                    f.write("bge $a0 $a2 Outboundserror\n")                    # OUT OF BOUNDS ERROR
+
+                    # INDEX IS OK
                     f.write("li $a1 4\n")
                     f.write("mul $a0 $a0 $a1\n")                               # MULTPLY INDEX BY 4
                     f.write("la $a1 " + node.value + "\n")                     # LOAD ADDRESS OF START OF ARRAY
@@ -233,6 +244,7 @@ def eval_int_array(node, f, var_dict, sp_offset):
     current_sp = current_sp[0] 
     
     # Array passed by reference to a function (value in sp_offset)
+    # TODO CHECK THAT INDEX IS IN BOUNDS
     if arr_size == -1:
         
         # EVALUATE INDEX OF ARRAY

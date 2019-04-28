@@ -5,9 +5,6 @@ from copy import deepcopy
 # Global variable used for current sp_offset
 sp_offset = 0
 
-# List of global arrays to distinguish from regular global ints
-#global_arrays = []
-
 def codeGen(AST, filename):
     var_dict = {}
     
@@ -51,7 +48,8 @@ def declare_global_variables(node, f, var_dict):
                 # MAKE LAST GLOBAL DECLARATION RESERVE SPACE
                 f.write(".space " + str(4*arr_size) + "\n")
                 f.write(child.children[0].value+ ": .word 0\n")
-                global_arrays.append(child.children[0].value)
+                global_arrays[child.children[0].value] = arr_size
+                #global_arrays.append(child.children[0].value)
 
 # FUNCTION FOR IDENTIFYING FUNCTION DECLARATIONS IN THE GLOBAL SCOPE
 def traverseCGEN(node, f, var_dict):    

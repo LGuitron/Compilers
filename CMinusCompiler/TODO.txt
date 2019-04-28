@@ -7,5 +7,4 @@
 
 Optional:
 
-1. Check index on runtime for global arrays
-2. Limit array upper bound when array is passed as parameter
+1. Limit array upper bound when array is passed as parameter
