@@ -1,7 +1,6 @@
 from TypeChecks import compare_node_value
 
 global_arrays = []                 # List of global_array names, used to distinguish from global ints
-global_array_parameters = []       # Function for storing information for int[] parameters passed to function (global or local)
 
 ######################################
 # ARITHMETIC INSTRUCTIONS DICTIONARY #
@@ -83,7 +82,8 @@ def assign_int(node, f, var_dict, sp_offset):
                 f.write("li $a1 4\n")
                 f.write("mul $a0 $a0 $a1\n")                                # MULTPLY INDEX BY 4
                 f.write("la $a1 " + child.value + "\n")                     # LOAD ADDRESS OF START OF ARRAY
-                f.write("add $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
+                #f.write("add $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
+                f.write("sub $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
                 f.write("sw $t0 0($a1)\n")
 
             #INT
@@ -168,21 +168,23 @@ def eval_node(node, f, var_dict, sp_offset):
 
                             # GLOBAL VARIABLE
                             # TODO PASS GLOBAL VARIABLES AS PARAMETERS
-                            '''
+                            
                             if param.value not in var_dict:
+                                
                                 
                                 # GLOBAL INT[]
                                 if param.value in global_arrays:
-                                    f.write("la $a1 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
+                                    #print("GLOBAL[]: ", param.value)
+                                    f.write("la $a0 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
                                 
                                 # GLOBAL INT
                                 else:
                                     print("Global: " , param.value)
-                            '''
+                            
                             
                             
                             # LOCAL INT VARIABLE
-                            if type(var_dict[param.value]) is int:
+                            elif type(var_dict[param.value]) is int:
                                 eval_node(param, f, var_dict, sp_offset + 4*i)
 
                             # LOCAL INT[] VARIABLE
@@ -196,12 +198,7 @@ def eval_node(node, f, var_dict, sp_offset):
                                     f.write("move $a1 $sp\n")                        # STORE CURRENT SP OFFSET IN $A1 register
                                     f.write("addiu $a1 " + str(current_sp) + "\n")   # GET ADDRESS OF OFFSET TO TRUE ARRAY
                                     f.write("lw $a0 0($a1)\n")                       # LOAD TRUE OFFSET FROM $A1 register
-                                    #f.write("move $a0 $sp\n")
-                                    #f.write("sub $a0 $a1 $a0\n")
-                                    
-                                #print("SECOND")
-                                #print("-------------")
-                                
+
                                 else:
                                     f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
                                     f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
@@ -221,7 +218,8 @@ def eval_node(node, f, var_dict, sp_offset):
                     f.write("li $a1 4\n")
                     f.write("mul $a0 $a0 $a1\n")                                # MULTPLY INDEX BY 4
                     f.write("la $a1 " + node.value + "\n")                     # LOAD ADDRESS OF START OF ARRAY
-                    f.write("add $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
+                    #f.write("add $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
+                    f.write("sub $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
                     f.write("lw $a0 0($a1)\n")
 
                 # INT

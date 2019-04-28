@@ -15,19 +15,21 @@ void final(int y[], int p)
     another(y, p);
 }
 
-void recarr(int h[], int g)
+void recarr(int h[], int j)
 {
-    final(h, g);
+    final(h, j);
 }
 
 
 void main(void)
 {
-    int a[3];
-    a[0] = 1;
-    a[1] = 2;
-    a[2] = 3;
-    recarr(a, 8);
+    globalarr[0] = 1;
+    globalarr[1] = 2;
+    globalarr[2] = 3;
+    global       = 1000;
+    
+    recarr(globalarr, 4);
+    output(global);
 }
 
 

@@ -33,7 +33,7 @@ def codeGen(AST, filename):
 # FUNCTION FOR IDENTIFYING GLOBAL VARIABLES
 def declare_global_variables(node, f, var_dict):
     
-    #global global_arrays
+    global global_arrays
     
     for child in node.children:
 
@@ -42,12 +42,17 @@ def declare_global_variables(node, f, var_dict):
             
             # INT
             if len(child.children) == 1:
-                f.write(child.children[0].value+ ": .word 0 \n")
+                f.write(child.children[0].value+ ": .word 0\n")
     
             # INT[SIZE] with .space
             elif len(child.children) == 2:
                 arr_size = int(child.children[1].value)
-                f.write(child.children[0].value+ ": .space " + str(4*arr_size) + "\n")
+                
+                # MAKE LAST GLOBAL DECLARATION RESERVE SPACE
+                f.write(".space " + str(4*arr_size) + "\n")
+                
+                #f.write(child.children[0].value+ ": .space " + str(4*arr_size) + "\n")
+                f.write(child.children[0].value+ ": .word 0\n")
                 global_arrays.append(child.children[0].value)
 
 # FUNCTION FOR IDENTIFYING FUNCTION DECLARATIONS IN THE GLOBAL SCOPE
