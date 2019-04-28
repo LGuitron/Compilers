@@ -9,9 +9,9 @@ def codeGen(AST, filename):
     var_dict = {}
     
     f= open(filename,"w+")
-    f.write(".data\nnewline: .asciiz \"\\n\" \n")
-    f.write("negindex: .asciiz \"Error de runtime: No se permiten indices negativos\" \n")
-    f.write("outbounds: .asciiz \"Error de runtime: Indice fuera de rango\" \n")
+    f.write(".data\nnewline: .align 4 \n.asciiz \"\\n\" \n")
+    f.write("negindex: .align 4 \n.asciiz \"Error de runtime: No se permiten indices negativos\" \n")
+    f.write("outbounds: .align 4 \n.asciiz \"Error de runtime: Indice fuera de rango\" \n")
     declare_global_variables(AST, f, var_dict)
     f.write(".text\n.globl main\n\n")
     
