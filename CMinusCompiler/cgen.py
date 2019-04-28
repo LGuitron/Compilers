@@ -73,7 +73,8 @@ def traverseCGEN(node, f, var_dict):
                 local_dict  = deepcopy(var_dict)
                 params_node = child.children[2]
                 
-                for i in range(len(params_node.children) -1, -1, -1):
+                #for i in range(len(params_node.children) -1, -1, -1):
+                for i in range(len(params_node.children)):
                     current_param = params_node.children[i]
                     
                     # INT[]
