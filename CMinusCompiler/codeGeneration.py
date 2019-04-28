@@ -1,5 +1,8 @@
 from TypeChecks import compare_node_value
 
+global_arrays = []                 # List of global_array names, used to distinguish from global ints
+global_array_parameters = []       # Function for storing information for int[] parameters passed to function (global or local)
+
 ######################################
 # ARITHMETIC INSTRUCTIONS DICTIONARY #
 ######################################
@@ -155,61 +158,46 @@ def eval_node(node, f, var_dict, sp_offset):
                     param = node.children[0].children[i]  
                     
                     if param.value != "void":
-                        # INT
-                        if param.value not in var_dict or type(var_dict[param.value]) is int:
-                            #eval_node(param, f, var_dict, sp_offset - 4*(i-1))
+                        
+                        # RAW INT
+                        try: 
+                            value = int(param.value)
                             eval_node(param, f, var_dict, sp_offset + 4*i)
-
-                        # TODO CHECK IF THIS IS RIGHT INT[]
-                        else:
-                            current_sp = var_dict[param.value][0]
-                            current_sp = (sp_offset + 4*i) - current_sp
-                            #current_sp = (sp_offset - 4*(i-1)) - current_sp
-                            #current_sp = sp_offset - current_sp
-                            #f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
-                        
                             
-                            f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
-                            f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
+                        except ValueError:
+
+                            # GLOBAL VARIABLE
+                            # TODO PASS GLOBAL VARIABLES AS PARAMETERS
+                            '''
+                            if param.value not in var_dict:
+                                
+                                # GLOBAL INT[]
+                                if param.value in global_arrays:
+                                    f.write("la $a1 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
+                                
+                                # GLOBAL INT
+                                else:
+                                    print("Global: " , param.value)
+                            '''
+                            
+                            
+                            # LOCAL INT VARIABLE
+                            if type(var_dict[param.value]) is int:
+                                eval_node(param, f, var_dict, sp_offset + 4*i)
+
+                            # LOCAL INT[] VARIABLE
+                            else:
+                                current_sp = var_dict[param.value][0]
+                                current_sp = (sp_offset + 4*i) - current_sp
+                                f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
+                                f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
 
                         f.write("sw $a0 0($sp)\n")
                         f.write("addiu $sp $sp -4\n")
                 
                 # JUMP TO FUNCTION                  
                 f.write("jal " + node.value + "\n")
-                
 
-                '''
-                # CHECK PARAMETERS IN INVERSE ORDER AND UPDATE
-                for i in range(len(node.children[0].children)-1, -1, -1):
-                    param = node.children[0].children[i]                    
-                    if param.value != "void":
-                        
-                        # INT
-                        if param.value not in var_dict or type(var_dict[param.value]) is int:
-                            #eval_node(param, f, var_dict, sp_offset - 4*(i-1))
-                            eval_node(param, f, var_dict, sp_offset)
-
-                        # TODO CHECK IF THIS IS RIGHT INT[]
-                        else:
-                            current_sp = var_dict[param.value][0]
-                            #current_sp = (sp_offset - 4*i) - current_sp
-                            #current_sp = (sp_offset - 4*(i-1)) - current_sp
-                            current_sp = sp_offset - current_sp
-                            #f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
-                            
-                        
-                            
-                            f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
-                            f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
-
-                        f.write("sw $a0 0($sp)\n")
-                        f.write("addiu $sp $sp -4\n")
-                
-                # JUMP TO FUNCTION                  
-                f.write("jal " + node.value + "\n")
-                '''
-                
             # LOOK FOR GLOBAL VARIABLE
             else:
                 
@@ -254,6 +242,7 @@ def eval_int_array(node, f, var_dict, sp_offset):
         
         
     else:
+        
         # EVALUATE INDEX OF ARRAY
         eval_node(node.children[0], f, var_dict, sp_offset)
         

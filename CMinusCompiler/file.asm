@@ -5,7 +5,6 @@ negindex: .align 4
 .asciiz "Error de runtime: No se permiten indices negativos" 
 outbounds: .align 4 
 .asciiz "Error de runtime: Indice fuera de rango" 
-globalarr: .space 12
 .text
 .globl main
 
@@ -599,29 +598,13 @@ li $a3 4
 mul $a0 $a0 $a3
 sub $a2 $a2 $a0
 sw $t0 0($a2)
-li $a0 2
-move $t0 $a0
-li $a0 0
-li $a1 4
-mul $a0 $a0 $a1
-la $a1 globalarr
-add $a1 $a1 $a0
-sw $t0 0($a1)
-li $a0 3
-move $t0 $a0
-li $a0 1
-li $a1 4
-mul $a0 $a0 $a1
-la $a1 globalarr
-add $a1 $a1 $a0
-sw $t0 0($a1)
 sw $fp 0($sp)
 addiu $sp $sp -4
 lw $a0 20($sp)
 sw $a0 0($sp)
 addiu $sp $sp -4
-la $a0 globalarr
-lw $a0 0($a0) 
+move $a0 $sp
+addiu $a0 56
 sw $a0 0($sp)
 addiu $sp $sp -4
 lw $a0 24($sp)
@@ -634,22 +617,30 @@ addiu $sp $sp -4
 jal functionboth
 li $v0 1
 li $a0 0
-li $a1 4
-mul $a0 $a0 $a1
-la $a1 globalarr
-add $a1 $a1 $a0
-lw $a0 0($a1)
+blt $a0 $zero Negindexerror
+li $a2 2
+bge $a0 $a2 Outboundserror
+move $a2 $sp
+addiu $a2 $a2 48
+li $a3 4
+mul $a0 $a0 $a3
+sub $a2 $a2 $a0
+lw $a0 0($a2)
 syscall
 li $v0 4
 la $a0 newline
 syscall
 li $v0 1
 li $a0 1
-li $a1 4
-mul $a0 $a0 $a1
-la $a1 globalarr
-add $a1 $a1 $a0
-lw $a0 0($a1)
+blt $a0 $zero Negindexerror
+li $a2 2
+bge $a0 $a2 Outboundserror
+move $a2 $sp
+addiu $a2 $a2 48
+li $a3 4
+mul $a0 $a0 $a3
+sub $a2 $a2 $a0
+lw $a0 0($a2)
 syscall
 li $v0 4
 la $a0 newline

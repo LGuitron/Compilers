@@ -1,4 +1,24 @@
+/*int global;
 int globalarr [3];
+
+void recarr(int h[], int g)
+{
+    output(h[0]);
+    output(h[1]);
+    output(h[2]);
+    output(g);
+}
+
+
+void main(void)
+{
+    globalarr[0] = 1;
+    globalarr[1] = 2;
+    globalarr[2] = 3;
+    /*global       = 4;
+    recarr(globalarr, 5);
+}*/
+
 
 void functionarrarys(int a[], int b[], int c[], int d[])
 {
@@ -82,11 +102,8 @@ void main(void)
     w[2] = 7;
     
     
-    globalarr[0] = 2;
-    globalarr[1] = 3;
     
-    
-    functionboth(e, globalarr, f, w);
-    output(globalarr[0]);
-    output(globalarr[1]);
+    functionboth(e, x, f, w);
+    output(x[0]);
+    output(x[1]);
 }
