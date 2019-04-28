@@ -82,7 +82,6 @@ def assign_int(node, f, var_dict, sp_offset):
                 f.write("li $a1 4\n")
                 f.write("mul $a0 $a0 $a1\n")                                # MULTPLY INDEX BY 4
                 f.write("la $a1 " + child.value + "\n")                     # LOAD ADDRESS OF START OF ARRAY
-                #f.write("add $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
                 f.write("sub $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
                 f.write("sw $t0 0($a1)\n")
 
@@ -103,7 +102,7 @@ def output_function(node, f, var_dict, sp_offset):
     
     # Print line break
     f.write("li $v0 4\n")
-    f.write("la $a0 newline\n")
+    f.write("la $a0 newline0\n")
     f.write("syscall\n")    
 
 ################################
@@ -167,21 +166,17 @@ def eval_node(node, f, var_dict, sp_offset):
                         except ValueError:
 
                             # GLOBAL VARIABLE
-                            # TODO PASS GLOBAL VARIABLES AS PARAMETERS
-                            
                             if param.value not in var_dict:
                                 
                                 
                                 # GLOBAL INT[]
                                 if param.value in global_arrays:
-                                    #print("GLOBAL[]: ", param.value)
                                     f.write("la $a0 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
                                 
                                 # GLOBAL INT
                                 else:
-                                    print("Global: " , param.value)
-                            
-                            
+                                    f.write("la $a0 " + param.value + "\n")
+                                    f.write("lw $a0 0($a0)\n")
                             
                             # LOCAL INT VARIABLE
                             elif type(var_dict[param.value]) is int:
@@ -216,10 +211,9 @@ def eval_node(node, f, var_dict, sp_offset):
                 if len(node.children) == 1:
                     eval_node(node.children[0], f, var_dict, sp_offset)        # NODE INDEX IN $a0 register
                     f.write("li $a1 4\n")
-                    f.write("mul $a0 $a0 $a1\n")                                # MULTPLY INDEX BY 4
+                    f.write("mul $a0 $a0 $a1\n")                               # MULTPLY INDEX BY 4
                     f.write("la $a1 " + node.value + "\n")                     # LOAD ADDRESS OF START OF ARRAY
-                    #f.write("add $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
-                    f.write("sub $a1 $a1 $a0\n")                                # GET TO THIS ARRAY POSITION
+                    f.write("sub $a1 $a1 $a0\n")                               # GET TO THIS ARRAY POSITION
                     f.write("lw $a0 0($a1)\n")
 
                 # INT

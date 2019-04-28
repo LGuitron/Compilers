@@ -7,6 +7,5 @@
 
 Optional:
 
-1. Pass global variables as parameters
-2. Add 0 to global string names  
-3. Limit array upper bound when array is passed as parameter
+1. Check index on runtime for global arrays
+2. Limit array upper bound when array is passed as parameter

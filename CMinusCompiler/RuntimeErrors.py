@@ -3,8 +3,8 @@ def add_runtime_errors(f):
 
     # PROGRAM END 
     f.write("\nEnd:\nli $v0 10\nsyscall\n")
-    errorMessage("Negindexerror", "negindex", f)
-    errorMessage("Outboundserror", "outbounds", f)
+    errorMessage("Negindexerror", "negindex0", f)
+    errorMessage("Outboundserror", "outbounds0", f)
 
 
 # Helper function to add runtime error with a message from a data section address

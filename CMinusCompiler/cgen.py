@@ -12,9 +12,9 @@ def codeGen(AST, filename):
     var_dict = {}
     
     f= open(filename,"w+")
-    f.write(".data\nnewline: .align 4 \n.asciiz \"\\n\" \n")
-    f.write("negindex: .align 4 \n.asciiz \"Error de runtime: No se permiten indices negativos\" \n")
-    f.write("outbounds: .align 4 \n.asciiz \"Error de runtime: Indice fuera de rango\" \n")
+    f.write(".data\nnewline0: .align 4 \n.asciiz \"\\n\" \n")
+    f.write("negindex0: .align 4 \n.asciiz \"Error de runtime: No se permiten indices negativos\" \n")
+    f.write("outbounds0: .align 4 \n.asciiz \"Error de runtime: Indice fuera de rango\" \n")
     declare_global_variables(AST, f, var_dict)
     f.write(".text\n.globl main\n\n")
     
@@ -50,8 +50,6 @@ def declare_global_variables(node, f, var_dict):
                 
                 # MAKE LAST GLOBAL DECLARATION RESERVE SPACE
                 f.write(".space " + str(4*arr_size) + "\n")
-                
-                #f.write(child.children[0].value+ ": .space " + str(4*arr_size) + "\n")
                 f.write(child.children[0].value+ ": .word 0\n")
                 global_arrays.append(child.children[0].value)
 
