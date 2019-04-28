@@ -1,26 +1,37 @@
-/*int global;
+int global;
 int globalarr [3];
+
+void another(int z[], int u)
+{
+    output(z[0]);
+    output(z[1]);
+    output(z[2]);
+    output(u);
+}
+
+
+void final(int y[], int p)
+{
+    another(y, p);
+}
 
 void recarr(int h[], int g)
 {
-    output(h[0]);
-    output(h[1]);
-    output(h[2]);
-    output(g);
+    final(h, g);
 }
 
 
 void main(void)
 {
-    globalarr[0] = 1;
-    globalarr[1] = 2;
-    globalarr[2] = 3;
-    /*global       = 4;
-    recarr(globalarr, 5);
-}*/
+    int a[3];
+    a[0] = 1;
+    a[1] = 2;
+    a[2] = 3;
+    recarr(a, 8);
+}
 
 
-void functionarrarys(int a[], int b[], int c[], int d[])
+/*void functionarrarys(int a[], int b[], int c[], int d[])
 {
     output(a[0]);
     output(a[1]);
@@ -106,4 +117,4 @@ void main(void)
     functionboth(e, x, f, w);
     output(x[0]);
     output(x[1]);
-}
+}*/

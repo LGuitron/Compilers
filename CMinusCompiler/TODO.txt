@@ -1,11 +1,12 @@
-3. Manage local variable declaration in inner compound statements
-4. Generate code for if
-5. Generate code for while
-6. Generate code for input
+1. Manage local variable declaration in inner compound statements
+2. Generate code for if
+3. Generate code for while
+4. Generate code for input
 
 ----------
 
 Optional:
 
-Limit array upper bound when array is passed as parameter
-Pass global variables as parameters
+1. Pass global variables as parameters
+2. Add 0 to global string names  
+3. Limit array upper bound when array is passed as parameter

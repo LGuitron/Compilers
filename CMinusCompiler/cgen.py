@@ -83,7 +83,7 @@ def traverseCGEN(node, f, var_dict):
                     current_param = params_node.children[i]
                     
                     # INT[]
-                    if current_param.value == "int[]":
+                    if current_param.value == "int[]":                        
                         local_dict[current_param.children[0].value] = (sp_offset, -1)
                     else:
                         local_dict[current_param.children[0].value] = sp_offset
@@ -108,7 +108,6 @@ def traverseCGEN(node, f, var_dict):
                 f.write("addiu $sp $sp " + str(4*local_declarations)+ "\n")      # POP STACK FOR LOCAL DECLARATIONS
                 f.write("lw $ra 4($sp)\n")
                 f.write("addiu $sp $sp " + str(8 + 4*len(params_node.children))+ "\n")
-                #f.write("addiu $sp $sp 8\n")                                    # MOVE BACK FOR $ra and $fp
                 f.write("lw $fp 0($sp)\n")
                 f.write("jr $ra\n")
                 

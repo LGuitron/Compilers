@@ -187,11 +187,25 @@ def eval_node(node, f, var_dict, sp_offset):
 
                             # LOCAL INT[] VARIABLE
                             else:
+
                                 current_sp = var_dict[param.value][0]
                                 current_sp = (sp_offset + 4*i) - current_sp
-                                f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
-                                f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
-
+                                
+                                # CHECK IF IS SECOND TIME PASSED AS PARAMETER
+                                if var_dict[param.value][1] == -1:
+                                    f.write("move $a1 $sp\n")                        # STORE CURRENT SP OFFSET IN $A1 register
+                                    f.write("addiu $a1 " + str(current_sp) + "\n")   # GET ADDRESS OF OFFSET TO TRUE ARRAY
+                                    f.write("lw $a0 0($a1)\n")                       # LOAD TRUE OFFSET FROM $A1 register
+                                    #f.write("move $a0 $sp\n")
+                                    #f.write("sub $a0 $a1 $a0\n")
+                                    
+                                #print("SECOND")
+                                #print("-------------")
+                                
+                                else:
+                                    f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
+                                    f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
+                                
                         f.write("sw $a0 0($sp)\n")
                         f.write("addiu $sp $sp -4\n")
                 
@@ -252,8 +266,8 @@ def eval_int_array(node, f, var_dict, sp_offset):
         f.write("bge $a0 $a2 Outboundserror\n")                          # OUT OF BOUNDS ERROR
         
         # INDEX IS OK
-        f.write("move $a2 $sp\n")                                        # STORE CURRENT STACK POINTER IN $a2
-        f.write("addiu $a2 $a2 " + str(sp_offset - current_sp) + "\n")   # ADD SP_OFFSET OF ARRAY START TO $a2 REGISTER
+        f.write("move $a2 $sp\n")                                       # STORE CURRENT STACK POINTER IN $a2
+        f.write("addiu $a2 $a2 " + str(sp_offset - current_sp) + "\n")  # ADD SP_OFFSET OF ARRAY START TO $a2 REGISTER
         f.write("li $a3 4\n")                                            # LOAD CONSTANT 4 IN REGISTER
         f.write("mul $a0 $a0 $a3\n")                                     # MULTPLY INDEX VALUE BY 4
         f.write("sub $a2 $a2 $a0\n")                                     # SUBSTRACT THIS VALUE TO $a2 to get to the right position
