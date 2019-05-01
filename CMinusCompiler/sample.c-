@@ -1,134 +1,23 @@
-int globalarr [3];
-int global;
-
-void another(int z[], int u)
-{
-    output(z[0]);
-    output(z[1]);
-    output(z[2]);
-    u = 4;
-    output(u);
-}
-
-
-void final(int y[], int p)
-{
-    another(y, p);
-}
-
-void recarr(int h[], int j)
-{
-    final(h, j);
-}
-
-
 void main(void)
 {
-    int a[3];
-    int c;
-    
-    globalarr[0] = 1;
-    globalarr[1] = 2;
-    globalarr[2] = 3;
-    global       = 0-1;
-    
-    
-    recarr(globalarr, global);
-    output((((1+2)+(3+4)) + ((5+6) + (7+8)))*10);
-    output(global);
-    
-    c = 3;
-    
-    
-    output(globalarr[c]);
-    output(a[global]);
-}
-
-
-/*void functionarrarys(int a[], int b[], int c[], int d[])
-{
-    output(a[0]);
-    output(a[1]);
-    output(a[2]);
-    output(b[0]);
-    output(b[1]);
-    output(c[0]);
-    output(c[1]);
-    output(d[0]);
-    output(d[1]);
-    output(d[2]);
-    output(d[3]);
-}
-
-void functionints(int a, int b, int c, int d)
-{
+    int a;
+    int j;
+    a = 1;
+    j = 8;
     output(a);
-    output(b);
-    output(c);
-    output(d);
+    if(a)
+    {
+        int c;
+        int d;
+        int e;
+        output(100);
+    }
+    else
+    {
+        int b;
+        int f;
+        int xx;
+        output(5);
+    }
+    output(j);
 }
-
-
-void functionboth(int a, int b[], int c, int d[])
-{
-    output(a);
-    output(b[0]);
-    output(b[1]);
-    output(c);
-    output(d[0]);
-    output(d[1]);
-    output(d[2]);
-    
-    b[0] = 1001;
-    b[1] = 1002;
-}
-
-
-void main(void)
-{
-    int w[3];
-    int x[2];
-    int y[2];
-    int z[4];
-    
-    int e;
-    int f;
-    int g;
-    int h;
-    
-    
-    w[0] = 1;
-    w[1] = 2;
-    w[2] = 3;
-    x[0] = 4;
-    x[1] = 5;
-    y[0] = 6;
-    y[1] = 7;
-    z[0] = 8;
-    z[1] = 9;
-    z[2] = 10;
-    z[3] = 11;
-    
-    functionarrarys(w, x, y, z);
-    
-
-    e = 1;
-    f = 2;
-    g = 3;
-    h = 4;
-    functionints(e,f,g,h);
-    
-    e = 1;
-    x[0] = 2;
-    x[1] = 3;
-    f = 4;
-    w[0] = 5;
-    w[1] = 6;
-    w[2] = 7;
-    
-    
-    
-    functionboth(e, x, f, w);
-    output(x[0]);
-    output(x[1]);
-}*/
