@@ -97,14 +97,10 @@ def traverseCGEN(node, f, var_dict):
                 traverse_function_nodes(child.children[3], f, local_dict, isroot = True)
                 local_declarations = count_local_declarations(child.children[3])
                 
-                #local
-                
                 
                 sp_offset -= 8 
                 sp_offset -= local_declarations*4
                 sp_offset -= len(params_node.children)*4
-                
-                #print(declaration_count)
                 
                 # RETURN TO CALLER
                 f.write("addiu $sp $sp " + str(4*local_declarations)+ "\n")      # POP STACK FOR LOCAL DECLARATIONS
@@ -207,11 +203,10 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
     else:
         for child in node.children:
             traverse_function_nodes(child, f, var_dict)
-            
-            # TODO CHECK IF THIS IS RIGHT
+
             # STOP ITERATING IF A RETURN STATEMENT IS FOUND
-            #if child.value == "return":
-            #    break
+            if child.value == "return":
+                break
             
             
 # HELPER FUNCTION FOR COUNTING LOCAL DECLARATIONS IN A GIVEN FUNCTION (FOR STACK POPPING)

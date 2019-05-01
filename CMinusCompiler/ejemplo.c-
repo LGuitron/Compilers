@@ -1,4 +1,4 @@
-/*int perr(int a[], int p[],int z[], int j)
+int perr(int a[], int p[],int z[], int j)
 {
     output(j);
     z[0] = z[0]+32;
@@ -34,21 +34,6 @@ void main(void)
 
     
     output(perro(p));
-}*/
-
-void func(int c[], int v)
-{
-    output(v);
-}
-
-
-void main(void)
-{
-    int a[2];
-    int d[3];
-    int c[2];
-    c[0] = 4;
-    func(d, c[0] + 3);
 }
 
 

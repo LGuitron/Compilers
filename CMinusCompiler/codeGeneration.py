@@ -156,6 +156,7 @@ def eval_node(node, f, var_dict, sp_offset):
 
 
                 for i in range(len(node.children[0].children)):
+                #for i in range(len(node.children[0].children)-1, -1, -1):
                     param = node.children[0].children[i]  
                     
                     if param.value != "void":
@@ -173,7 +174,7 @@ def eval_node(node, f, var_dict, sp_offset):
                                 
                                 # EVALUATE ARITHMETIC EXPRESSIONS
                                 if compare_node_value(param.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
-                                    eval_node(param, f, var_dict, sp_offset)
+                                    eval_node(param, f, var_dict, sp_offset + 4*i)
                                 
                                 # GLOBAL INT[]
                                 elif param.value in global_arrays:
@@ -190,7 +191,6 @@ def eval_node(node, f, var_dict, sp_offset):
 
                             # LOCAL INT[] VARIABLE
                             else:
-
                                 current_sp = var_dict[param.value][0]
                                 current_sp = (sp_offset + 4*i) - current_sp
                                 
