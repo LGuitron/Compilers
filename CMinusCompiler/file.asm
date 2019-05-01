@@ -10,74 +10,47 @@ outbounds0: .align 4
 
 j main
 
+factorial:
+
+move $fp $sp
+sw $ra 0($sp)
+addiu $sp $sp -4
+lw $t0 8($sp)
+li $t1 0
+seq $a0 $t0 $t1
+sw $a0 0($sp)
+beq $a0 $zero endif0
+li $a0 1
+addiu $sp $sp 0
+j endif0
+endif0:
+li $a0 5
+addiu $sp $sp 0
+lw $ra 4($sp)
+addiu $sp $sp 12
+lw $fp 0($sp)
+jr $ra
+
 main:
 
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 1
-move $t0 $a0
-sw $t0 8($sp)
-li $a0 8
-move $t0 $a0
-sw $t0 4($sp)
 li $v0 1
-lw $a0 8($sp)
+sw $fp 0($sp)
+addiu $sp $sp -4
+li $a0 0
+sw $a0 0($sp)
+addiu $sp $sp -4
+jal factorial
 syscall
 li $v0 4
 la $a0 newline0
 syscall
-lw $a0 8($sp)
-sne $a0 $a0 $zero
-sw $a0 0($sp)
-addiu $sp $sp -4
-beq $a0 $zero false0
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
 li $v0 1
-li $a0 100
-syscall
-li $v0 4
-la $a0 newline0
-syscall
-j endif0
-false0:
-li $a0 0
+sw $fp 0($sp)
+addiu $sp $sp -4
+li $a0 10
 sw $a0 0($sp)
 addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $a0 0
-sw $a0 0($sp)
-addiu $sp $sp -4
-li $v0 1
-li $a0 5
-syscall
-li $v0 4
-la $a0 newline0
-syscall
-endif0:
-lw $a0 16($sp)
-addiu $sp $sp 4
-beq $a0 $zero falserec0
-addiu $sp $sp -12
-j ifrecoverend0
-falserec0:
-addiu $sp $sp -12
-ifrecoverend0:
-li $v0 1
-lw $a0 28($sp)
+jal factorial
 syscall
 li $v0 4
 la $a0 newline0

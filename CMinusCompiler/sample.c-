@@ -1,23 +1,22 @@
-void main(void)
+int factorial(int n)
 {
-    int a;
-    int j;
-    a = 1;
-    j = 8;
-    output(a);
-    if(a)
+    if(n==0)
     {
-        int c;
-        int d;
-        int e;
-        output(100);
+        return 1;
     }
     else
     {
-        int b;
-        int f;
-        int xx;
-        output(5);
+        return 2;
     }
-    output(j);
+    /*return 5;*/
+}
+
+
+
+
+
+void main(void)
+{
+    output(factorial(0));
+    /*output(factorial(10));*/
 }

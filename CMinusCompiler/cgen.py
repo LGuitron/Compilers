@@ -161,29 +161,18 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
 
         # EVALUATE CONDITION
         eval_node(node.children[0], f, var_dict, sp_offset)
-
-        # STORE IF EVALUATION IN THE STACK FOR LATER USE
-        # 1 - TRUE | 0 - FALSE
-        f.write("sne $a0 $a0 $zero\n")            
-        f.write("sw $a0 0($sp)\n")
-        f.write("addiu $sp $sp -4\n")
-        sp_offset += 4
         
         # IF FALSE JUMP EITHER TO FALSE PART, OR TO ENDIF ACCORDINGLY
         f.write("beq $a0 $zero "+str(jump_to_false) + "\n")
-        
-
 
         start_sp_offset = sp_offset
-        
-        print(start_sp_offset)
         
         # TRUE PART
         traverse_function_nodes(node.children[1], f, var_dict)
         f.write("j endif" + str(if_statement_count) + "\n")
-        
-        true_sp_offset = sp_offset - start_sp_offset
-        second_sp_offset = sp_offset
+
+        # Reset sp_offset
+        sp_offset = start_sp_offset
         
         # ELSE PART
         if children_amount == 3:
@@ -191,45 +180,8 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
             traverse_function_nodes(node.children[2], f, var_dict)
         f.write("endif" + str(if_statement_count) + ":\n")
         
-        
-        false_sp_offset = sp_offset - second_sp_offset
-        
-        print(sp_offset)
-        print(false_sp_offset, " - ", true_sp_offset)
-        
-        # MOVE SP COUNTER BACK FOR ALL DECLARATIONS THAT DID NOT TOOK PLACE
-        eval_sp_offset = sp_offset - start_sp_offset              # GET THE OFFSET OF THE STORED DECLARATION
-        f.write("lw $a0 " + str(eval_sp_offset) + "($sp)\n")  # LOAD IT IN $A0
-        f.write("addiu $sp $sp 4\n")
-        sp_offset -= 4
-
-        
-        
-        # IN FALSE CASE JUMP TO FALSE RECOVER
-        #if children_amount == 3:
-        f.write("beq $a0 $zero falserec" + str(if_statement_count)+"\n")
-        #else:
-        #    f.write("beq $a0 $zero ifrecoverend" + str(if_statement_count)+"\n")
-        
-        # TRUE CASE MOVE BACK FALSE_SP_OFSET AND JUMP TO RECOVERY END
-        f.write("addiu $sp $sp " + str(-1*false_sp_offset) + "\n")
-        f.write("j ifrecoverend" + str(if_statement_count) + "\n")
-        
-        # FALSE CASE MOVE BACK TRUE_SP_OFSET
-        f.write("falserec" + str(if_statement_count) + ":\n")
-        
-        # TRUE
-        #f.write("addiu $sp $sp 0\n")
-        
-        # FALSE
-        f.write("addiu $sp $sp " + str(-1*true_sp_offset) + "\n")
-        
-
-        f.write("ifrecoverend" + str(if_statement_count) + ":\n")
-        
-
-        #print("Offsets: " , true_sp_offset, " - ", false_sp_offset)
-        
+        # Reset sp_offset
+        sp_offset = start_sp_offset
         
         if_statement_count += 1
     
@@ -241,8 +193,15 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
     # FUNCTION INNER COMPOUND STATEMENT
     elif node.value == "compound_statement" and not isroot:
         local_dict = deepcopy(var_dict)
+        inner_compound_declarations = 0
+        
         for child in node.children:
+            if child.value == "int":
+                inner_compound_declarations += 1
             traverse_function_nodes(child, f, local_dict)
+        
+        # Move stack pointer back for inner local declarations
+        f.write("addiu $sp $sp " + str(4*inner_compound_declarations) + "\n")
         
     # RECURSIVE TREE TRAVERSAL
     else:
