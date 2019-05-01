@@ -1,6 +1,8 @@
-1. Generate code for if (Fix False case when there is no else)
-2. Generate code for while
-3. Generate code for input
+1. Fix sum of array elements
+2. Pass functions as parameters to output and to other functions
+3. Fix function return values (with if and else)
+4. Generate code for while
+5. Generate code for input
 
 ----------
 

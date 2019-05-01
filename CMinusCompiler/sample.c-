@@ -18,5 +18,4 @@ int factorial(int n)
 void main(void)
 {
     output(factorial(0));
-    /*output(factorial(10));*/
 }

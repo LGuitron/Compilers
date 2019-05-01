@@ -208,6 +208,12 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
         for child in node.children:
             traverse_function_nodes(child, f, var_dict)
             
+            # TODO CHECK IF THIS IS RIGHT
+            # STOP ITERATING IF A RETURN STATEMENT IS FOUND
+            #if child.value == "return":
+            #    break
+            
+            
 # HELPER FUNCTION FOR COUNTING LOCAL DECLARATIONS IN A GIVEN FUNCTION (FOR STACK POPPING)
 def count_local_declarations(node):
     

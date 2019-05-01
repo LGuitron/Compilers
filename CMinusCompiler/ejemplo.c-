@@ -1,0 +1,57 @@
+/*int perr(int a[], int p[],int z[], int j)
+{
+    output(j);
+    z[0] = z[0]+32;
+    return a[0]+p[0]+z[0];
+}
+
+int can (int a[], int p[])
+{
+    int z[2];
+    z[0]=32;
+    return perr(a,p,z,z[0]+10);
+}
+
+int perro(int a[])
+{
+    int p[2];
+    p[0] = 100;
+    return can(a,p);
+    output(p[0]+144);
+
+}
+void main(void)
+{
+    int k;
+    int p[2];
+
+    p[0] = 1000;
+    output(perro(p));
+    p[0] = p[0] + 79;
+
+    output(perro(p));
+}*/
+
+
+int func(int x[], int y[], int z[])
+{
+    return x[0] + y[0] + z[0];
+}
+
+void main(void)
+{
+    int a[2];
+    int b[2];
+    int c[2];
+    int d;
+    
+    a[0] = 1;
+    b[0] = 2;
+    c[0] = 3;
+    
+    d = func(a, b, c);
+    output(d);
+    output(a[0] + b[0] + c[0]);
+}
+
+

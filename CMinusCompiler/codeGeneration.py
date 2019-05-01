@@ -1,8 +1,8 @@
 from TypeChecks import compare_node_value
 
-#global_arrays = []                 # List of global_array names, used to distinguish from global ints
+global_arrays = {}                    # Dictionary containing global arrays with their corresponding sizes
 
-global_arrays = {}                  # Dictionary containing global arrays with their corresponding sizes
+
 
 ######################################
 # ARITHMETIC INSTRUCTIONS DICTIONARY #
@@ -122,7 +122,7 @@ def eval_node(node, f, var_dict, sp_offset):
         # ARITHMETIC OPERATORS
         if compare_node_value(node.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
             eval_arithmetic(node, f, var_dict, 0, sp_offset)
-        
+            
         # LOOK FOR VARIABLE SP_OFFSET VALUE IN DICTIONARY
         else:
             
@@ -130,7 +130,7 @@ def eval_node(node, f, var_dict, sp_offset):
             if node.value in var_dict:
             
                 # INT [index]
-                if len(node.children) == 1:                 
+                if len(node.children) == 1:
                     eval_int_array(node, f, var_dict, sp_offset)
                     f.write("lw $a0 0($a2)\n")
                 
@@ -171,8 +171,12 @@ def eval_node(node, f, var_dict, sp_offset):
                             if param.value not in var_dict:
                                 
                                 
+                                # EVALUATE ARITHMETIC EXPRESSIONS
+                                if compare_node_value(param.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
+                                    eval_node(param, f, var_dict, sp_offset)
+                                
                                 # GLOBAL INT[]
-                                if param.value in global_arrays:
+                                elif param.value in global_arrays:
                                     f.write("la $a0 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
                                 
                                 # GLOBAL INT
@@ -279,6 +283,7 @@ def eval_int_array(node, f, var_dict, sp_offset):
 ###################################
 # EVALUATE ARITHMETIC EXPRESSIONS #
 ###################################
+
 def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
     
     operands     = []
@@ -311,9 +316,14 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
             else:
                 
                 # INT[INDEX]
-                if (len(child.children) == 1):    
+                if (len(child.children) == 1):
+
                     eval_int_array(child, f, var_dict, abs_sp_offset)
-                    operands.append(-1)
+                    # Store Value in address $a2 in RAM 
+                    f.write("lw $a2 0($a2)\n")                                                         
+                    f.write("sw $a2 " + str(sp_offset - 4*(i+1))+ "($sp)\n")
+                    
+                    operands.append(sp_offset - 4 * (i+1))
                     eval_method.append(2)
                 
                 # INT VARIABLE
@@ -337,8 +347,7 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
             
         # Int[] 
         else:
-            f.write("lw $t" + str(i) + " 0($a2)\n")
+            f.write("lw $t" + str(i) + " " + str(operands[i]) +"($sp)\n")
 
-    #f.write(arithmetic_dict[node.value]+ " $a0 $a0 $a1\n")
     f.write(arithmetic_dict[node.value]+ " $a0 $t0 $t1\n")
     f.write("sw $a0 " + str(sp_offset) + "($sp)\n")         # Store in main memory
