@@ -96,10 +96,10 @@ def assign_int(node, f, var_dict, sp_offset):
 # OUTPUT FUNCTION #
 ###################
 def output_function(node, f, var_dict, sp_offset):
-    
-    f.write("li $v0 1\n")
+
     value_node = node.children[0].children[0]
     eval_node(value_node, f, var_dict, sp_offset)
+    f.write("li $v0 1\n")
     f.write("syscall\n")
     
     # Print line break
@@ -242,6 +242,8 @@ def eval_node(node, f, var_dict, sp_offset):
 #################################################
 def eval_int_array(node, f, var_dict, sp_offset):
 
+    
+    
     
     current_sp = var_dict[node.value]
     arr_size   = current_sp[1]
