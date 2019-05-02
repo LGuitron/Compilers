@@ -6,7 +6,6 @@ from copy import deepcopy
 sp_offset = 0
 if_statement_count = 0
 
-
 def codeGen(AST, filename):
     var_dict = {}
     
@@ -64,9 +63,11 @@ def traverseCGEN(node, f, var_dict):
             function_name = child.children[1].value
             f.write("\n"+ function_name + ":\n\n")
             
+            params_node = child.children[2]
+            
             # MAIN FUNCTION
             if function_name == "main":
-                traverse_function_nodes(child.children[3], f, var_dict, isroot = True)
+                traverse_function_nodes(child.children[3], f, var_dict, len(params_node.children), isroot = True)
                 
             # OTHER FUNCTIONS
             else:
@@ -78,7 +79,7 @@ def traverseCGEN(node, f, var_dict):
                 
                 # ADD PARAMETERS TO THE LOCAL DICTIONARY
                 local_dict  = deepcopy(var_dict)
-                params_node = child.children[2]
+                
                 
                 #for i in range(len(params_node.children) -1, -1, -1):
                 for i in range(len(params_node.children)):
@@ -94,9 +95,8 @@ def traverseCGEN(node, f, var_dict):
                 
                 
                 # ITERATE OVER COMPOUND STATEMENT ONLY
-                traverse_function_nodes(child.children[3], f, local_dict, isroot = True)
+                traverse_function_nodes(child.children[3], f, local_dict, len(params_node.children),  isroot = True)
                 local_declarations = count_local_declarations(child.children[3])
-                
                 
                 sp_offset -= 8 
                 sp_offset -= local_declarations*4
@@ -108,10 +108,11 @@ def traverseCGEN(node, f, var_dict):
                 f.write("addiu $sp $sp " + str(8 + 4*len(params_node.children))+ "\n")
                 f.write("lw $fp 0($sp)\n")
                 f.write("jr $ra\n")
-                
 
 # FUNCTION FOR TRAVERSING ALL NODES INSIDE A FUNCTION    
-def traverse_function_nodes(node, f, var_dict, isroot = False):
+#def traverse_function_nodes(node, f, var_dict, isroot = False):
+def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local_declarations = 0):
+
 
     global sp_offset
     global if_statement_count
@@ -164,7 +165,7 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
         start_sp_offset = sp_offset
         
         # TRUE PART
-        traverse_function_nodes(node.children[1], f, var_dict)
+        traverse_function_nodes(node.children[1], f, var_dict, params_num)
         f.write("j endif" + str(if_statement_count) + "\n")
 
         # Reset sp_offset
@@ -173,7 +174,7 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
         # ELSE PART
         if children_amount == 3:
             f.write("false" + str(if_statement_count) + ":\n")
-            traverse_function_nodes(node.children[2], f, var_dict)
+            traverse_function_nodes(node.children[2], f, var_dict, params_num)
         f.write("endif" + str(if_statement_count) + ":\n")
         
         # Reset sp_offset
@@ -184,6 +185,21 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
     # RETURN VALUE
     elif node.value == "return":
         eval_node(node.children[0], f, var_dict, sp_offset)
+        #print("PAR: " , params_num)
+    
+        # TODO RETURN TO CALLER PROPERLY
+        
+        # POP STACK FOR LOCAL DECLARATIONS USING FRAME POINTER
+        f.write("move $sp $fp\n")
+        f.write("addiu $sp $sp " + str(-4*params_num) + "\n")
+        
+        
+        #f.write("addiu $sp $sp " + str(4*local_declarations)+ "\n")      
+        f.write("lw $ra 4($sp)\n")
+        f.write("addiu $sp $sp " + str(8 + 4*params_num)+ "\n")
+        f.write("lw $fp 0($sp)\n")
+        f.write("jr $ra\n")
+        
     
     
     # FUNCTION INNER COMPOUND STATEMENT
@@ -194,7 +210,7 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
         for child in node.children:
             if child.value == "int":
                 inner_compound_declarations += 1
-            traverse_function_nodes(child, f, local_dict)
+            traverse_function_nodes(child, f, local_dict, params_num)
         
         # Move stack pointer back for inner local declarations
         f.write("addiu $sp $sp " + str(4*inner_compound_declarations) + "\n")
@@ -202,7 +218,7 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
     # RECURSIVE TREE TRAVERSAL
     else:
         for child in node.children:
-            traverse_function_nodes(child, f, var_dict)
+            traverse_function_nodes(child, f, var_dict, params_num)
 
             # STOP ITERATING IF A RETURN STATEMENT IS FOUND
             if child.value == "return":
@@ -211,7 +227,7 @@ def traverse_function_nodes(node, f, var_dict, isroot = False):
             
 # HELPER FUNCTION FOR COUNTING LOCAL DECLARATIONS IN A GIVEN FUNCTION (FOR STACK POPPING)
 def count_local_declarations(node):
-    
+
     new_args = 0
     
     # INT DECLARATIONS

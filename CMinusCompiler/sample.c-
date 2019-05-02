@@ -6,9 +6,9 @@ int factorial(int n)
     }
     else
     {
-        return 2;
+        return n;
     }
-    /*return 5;*/
+    return 0;
 }
 
 
@@ -17,5 +17,5 @@ int factorial(int n)
 
 void main(void)
 {
-    output(factorial(0));
+    output(factorial(7));
 }

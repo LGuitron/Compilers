@@ -156,7 +156,6 @@ def eval_node(node, f, var_dict, sp_offset):
 
 
                 for i in range(len(node.children[0].children)):
-                #for i in range(len(node.children[0].children)-1, -1, -1):
                     param = node.children[0].children[i]  
                     
                     if param.value != "void":
