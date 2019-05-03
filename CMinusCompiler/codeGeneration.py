@@ -91,7 +91,31 @@ def assign_int(node, f, var_dict, sp_offset):
             else:
                 f.write("la $a0 " + child.value + "\n")
                 f.write("sw $t0 0($a0)\n")
+
+
+##################
+# INPUT FUNCTION #
+##################
+def input_function(f):
+
+    # Print input message
+    f.write("li $v0 4\n")
+    f.write("la $a0 input0\n")
+    f.write("syscall\n")   
     
+    # Read Input
+    f.write("li $v0 5\n")
+    f.write("syscall\n")
+    
+    # Store value in $a0
+    f.write("move $a0 $v0\n")
+    
+    # Print line break
+    #f.write("li $v0 4\n")
+    #f.write("la $a0 newline0\n")
+    #f.write("syscall\n")    
+
+
 ###################
 # OUTPUT FUNCTION #
 ###################
@@ -149,65 +173,72 @@ def eval_node(node, f, var_dict, sp_offset):
             # FUNCTION CALL
             elif len(node.children) > 0 and node.children[0].value == "_args":
                 
-                # STORE CALLER FP
-                f.write("sw $fp 0($sp)\n")
-                f.write("addiu $sp $sp -4\n")
-                sp_offset += 4
-
-
-                for i in range(len(node.children[0].children)):
-                    param = node.children[0].children[i]  
-                    
-                    if param.value != "void":
-                        
-                        # RAW INT
-                        try: 
-                            value = int(param.value)
-                            eval_node(param, f, var_dict, sp_offset + 4*i)
-                            
-                        except ValueError:
-
-                            # GLOBAL VARIABLE
-                            if param.value not in var_dict:
-                                
-                                
-                                # EVALUATE ARITHMETIC EXPRESSIONS
-                                if compare_node_value(param.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
-                                    eval_node(param, f, var_dict, sp_offset + 4*i)
-                                
-                                # GLOBAL INT[]
-                                elif param.value in global_arrays:
-                                    f.write("la $a0 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
-                                
-                                # GLOBAL INT
-                                else:
-                                    f.write("la $a0 " + param.value + "\n")
-                                    f.write("lw $a0 0($a0)\n")
-                            
-                            # LOCAL INT VARIABLE
-                            elif type(var_dict[param.value]) is int:
-                                eval_node(param, f, var_dict, sp_offset + 4*i)
-
-                            # LOCAL INT[] VARIABLE
-                            else:
-                                current_sp = var_dict[param.value][0]
-                                current_sp = (sp_offset + 4*i) - current_sp
-                                
-                                # CHECK IF IS SECOND TIME PASSED AS PARAMETER
-                                if var_dict[param.value][1] == -1:
-                                    f.write("move $a1 $sp\n")                        # STORE CURRENT SP OFFSET IN $A1 register
-                                    f.write("addiu $a1 " + str(current_sp) + "\n")   # GET ADDRESS OF OFFSET TO TRUE ARRAY
-                                    f.write("lw $a0 0($a1)\n")                       # LOAD TRUE OFFSET FROM $A1 register
-
-                                else:
-                                    f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
-                                    f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
-                                
-                        f.write("sw $a0 0($sp)\n")
-                        f.write("addiu $sp $sp -4\n")
                 
-                # JUMP TO FUNCTION                  
-                f.write("jal " + node.value + "\n")
+                # RESERVED INPUT FUNCTION
+                if node.value == "input" and node.children[0].children[0].value == "void":
+                    input_function(f)
+                
+                # REGULAR FUNCTION
+                else:
+                    # STORE CALLER FP
+                    f.write("sw $fp 0($sp)\n")
+                    f.write("addiu $sp $sp -4\n")
+                    sp_offset += 4
+
+
+                    for i in range(len(node.children[0].children)):
+                        param = node.children[0].children[i]  
+                        
+                        if param.value != "void":
+                            
+                            # RAW INT
+                            try: 
+                                value = int(param.value)
+                                eval_node(param, f, var_dict, sp_offset + 4*i)
+                                
+                            except ValueError:
+
+                                # GLOBAL VARIABLE
+                                if param.value not in var_dict:
+                                    
+                                    
+                                    # EVALUATE ARITHMETIC EXPRESSIONS
+                                    if compare_node_value(param.value, ["<", "<=", "==", "!=", ">=", ">",  "+", "-", "*", "/"]):
+                                        eval_node(param, f, var_dict, sp_offset + 4*i)
+                                    
+                                    # GLOBAL INT[]
+                                    elif param.value in global_arrays:
+                                        f.write("la $a0 " + param.value + "\n")          # ADDRESS OF GLOBAL ARRAY START IN $A1 registe
+                                    
+                                    # GLOBAL INT
+                                    else:
+                                        f.write("la $a0 " + param.value + "\n")
+                                        f.write("lw $a0 0($a0)\n")
+                                
+                                # LOCAL INT VARIABLE
+                                elif type(var_dict[param.value]) is int:
+                                    eval_node(param, f, var_dict, sp_offset + 4*i)
+
+                                # LOCAL INT[] VARIABLE
+                                else:
+                                    current_sp = var_dict[param.value][0]
+                                    current_sp = (sp_offset + 4*i) - current_sp
+                                    
+                                    # CHECK IF IS SECOND TIME PASSED AS PARAMETER
+                                    if var_dict[param.value][1] == -1:
+                                        f.write("move $a1 $sp\n")                        # STORE CURRENT SP OFFSET IN $A1 register
+                                        f.write("addiu $a1 " + str(current_sp) + "\n")   # GET ADDRESS OF OFFSET TO TRUE ARRAY
+                                        f.write("lw $a0 0($a1)\n")                       # LOAD TRUE OFFSET FROM $A1 register
+
+                                    else:
+                                        f.write("move $a0 $sp\n")                        # STORE CURRENT SP OFFSET IN $A0 register
+                                        f.write("addiu $a0 " + str(current_sp) + "\n")   # GET ADDRESS OF ARRAY START IN $A0 register
+                                    
+                            f.write("sw $a0 0($sp)\n")
+                            f.write("addiu $sp $sp -4\n")
+                    
+                    # JUMP TO FUNCTION    
+                    f.write("jal " + node.value + "\n")
 
             # LOOK FOR GLOBAL VARIABLE
             else:

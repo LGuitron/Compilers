@@ -13,6 +13,7 @@ def codeGen(AST, filename):
     f.write(".data\nnewline0: .align 4 \n.asciiz \"\\n\" \n")
     f.write("negindex0: .align 4 \n.asciiz \"Error de runtime: No se permiten indices negativos\" \n")
     f.write("outbounds0: .align 4 \n.asciiz \"Error de runtime: Indice fuera de rango\" \n")
+    f.write("input0: .align 4 \n.asciiz \"Intoduce un entero: \" \n")
     declare_global_variables(AST, f, var_dict)
     f.write(".text\n.globl main\n\n")
     

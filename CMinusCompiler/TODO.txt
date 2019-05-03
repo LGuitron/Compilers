@@ -1,5 +1,4 @@
 1. Generate code for while
-2. Generate code for input
 
 ----------
 
