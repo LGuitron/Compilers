@@ -241,9 +241,6 @@ def eval_node(node, f, var_dict, sp_offset):
 #################################################
 def eval_int_array(node, f, var_dict, sp_offset):
 
-    
-    
-    
     current_sp = var_dict[node.value]
     arr_size   = current_sp[1]
     current_sp = current_sp[0] 
@@ -316,13 +313,21 @@ def eval_arithmetic(node, f, var_dict, sp_offset, abs_sp_offset):
             # LOOK FOR SP_OFFSET
             else:
                 
-                # INT[INDEX]
+                # INT[INDEX] OR FUNCTION
                 if (len(child.children) == 1):
-
-                    eval_int_array(child, f, var_dict, abs_sp_offset)
-                    # Store Value in address $a2 in RAM 
-                    f.write("lw $a2 0($a2)\n")                                                         
-                    f.write("sw $a2 " + str(sp_offset - 4*(i+1))+ "($sp)\n")
+                    
+                    # FUNCTION
+                    if child.children[0].value == "_args":
+                        eval_node(child, f, var_dict, abs_sp_offset)
+                        f.write("sw $a0 " + str(sp_offset - 4*(i+1))+ "($sp)\n")
+                    
+                    # INT[INDEX]
+                    else:
+                        eval_int_array(child, f, var_dict, abs_sp_offset)
+                        
+                        # Store Value in address $a2 in RAM 
+                        f.write("lw $a2 0($a2)\n")                                                         
+                        f.write("sw $a2 " + str(sp_offset - 4*(i+1))+ "($sp)\n")
                     
                     operands.append(sp_offset - 4 * (i+1))
                     eval_method.append(2)

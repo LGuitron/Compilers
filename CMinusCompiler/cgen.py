@@ -185,13 +185,10 @@ def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local
     # RETURN VALUE
     elif node.value == "return":
         eval_node(node.children[0], f, var_dict, sp_offset)
-        #print("PAR: " , params_num)
-    
-        # TODO RETURN TO CALLER PROPERLY
-        
+
         # POP STACK FOR LOCAL DECLARATIONS USING FRAME POINTER
         f.write("move $sp $fp\n")
-        f.write("addiu $sp $sp " + str(-4*params_num) + "\n")
+        f.write("addiu $sp $sp -4\n")
         
         
         #f.write("addiu $sp $sp " + str(4*local_declarations)+ "\n")      

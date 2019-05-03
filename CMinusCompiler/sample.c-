@@ -1,12 +1,13 @@
-int factorial(int n)
+int factorial(int n, int a)
 {
+    int g;
     if(n==0)
     {
         return 1;
     }
     else
     {
-        return n;
+        return n * factorial(n - 1, a);
     }
     return 0;
 }
@@ -17,5 +18,5 @@ int factorial(int n)
 
 void main(void)
 {
-    output(factorial(7));
+    output(factorial(7, 4));
 }
