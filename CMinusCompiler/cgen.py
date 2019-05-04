@@ -5,6 +5,7 @@ from copy import deepcopy
 # Global variable used for current sp_offset
 sp_offset = 0
 if_statement_count = 0
+while_statement_count = 0
 
 def codeGen(AST, filename):
     var_dict = {}
@@ -117,6 +118,7 @@ def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local
 
     global sp_offset
     global if_statement_count
+    global while_statement_count
     
     # INT DECLARATIONS
     if node.value == "int": 
@@ -144,6 +146,36 @@ def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local
     # CUSTOM FUNCTION CALL
     elif len(node.children) == 1 and node.children[0].value == "_args":
         eval_node(node, f, var_dict, sp_offset)
+    
+    
+    # WHILE STATEMENT
+    elif node.value == "while":
+        
+        # LOOP START (THIS WILL STILL CHECK THE CONDITION)
+        f.write("while" + str(while_statement_count) + ":\n")
+        
+        # EVALUATE CONDITION
+        eval_node(node.children[0], f, var_dict, sp_offset)
+        
+        # IF FALSE JUMP TO END WHILE
+        f.write("beq $a0 $zero endwhile" + str(while_statement_count) + "\n")
+        
+        # LOOP CODE
+        start_sp_offset = sp_offset
+        
+        traverse_function_nodes(node.children[1], f, var_dict, params_num)
+        
+        sp_offset = start_sp_offset
+        
+        # TODO FREE SP AFTER EACH ITERATION
+        
+        # JUMP TO START OF WHILE TO CHECK CONDITION AGAIN
+        f.write("b while" + str(while_statement_count) + "\n")
+        
+        # WHILE ENDED
+        f.write("endwhile" + str(while_statement_count) + ":\n")
+        
+        while_statement_count += 1
     
     
     # IF STATEMENT
