@@ -1,8 +1,0 @@
-1. Generate code for while
-
-----------
-
-Optional:
-
-1. Limit array upper bound when array is passed as parameter
-2. Initialize global arrays with 0s

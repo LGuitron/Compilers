@@ -105,7 +105,10 @@ def traverseCGEN(node, f, var_dict):
                 sp_offset -= len(params_node.children)*4
                 
                 # RETURN TO CALLER
-                f.write("addiu $sp $sp " + str(4*local_declarations)+ "\n")      # POP STACK FOR LOCAL DECLARATIONS
+                # POP STACK FOR LOCAL DECLARATIONS USING FRAME POINTER
+                f.write("move $sp $fp\n")
+                f.write("addiu $sp $sp -4\n")
+
                 f.write("lw $ra 4($sp)\n")
                 f.write("addiu $sp $sp " + str(8 + 4*len(params_node.children))+ "\n")
                 f.write("lw $fp 0($sp)\n")

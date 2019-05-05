@@ -99,7 +99,8 @@ lw $ra 4($sp)
 addiu $sp $sp 20
 lw $fp 0($sp)
 jr $ra
-addiu $sp $sp 12
+move $sp $fp
+addiu $sp $sp -4
 lw $ra 4($sp)
 addiu $sp $sp 20
 lw $fp 0($sp)
@@ -194,7 +195,8 @@ sw $t0 12($sp)
 addiu $sp $sp 4
 b while1
 endwhile1:
-addiu $sp $sp 12
+move $sp $fp
+addiu $sp $sp -4
 lw $ra 4($sp)
 addiu $sp $sp 20
 lw $fp 0($sp)

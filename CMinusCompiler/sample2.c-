@@ -1,12 +1,18 @@
-void main(void)
+void func(void)
 {
     int i;
     i = 0;
-    while(i<10)
+    while(i<2)
     {
         int a;
         output(i);
         i = i+1;
     }
     output(i);
+}
+
+
+void main(void)
+{
+    func();
 }
