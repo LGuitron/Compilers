@@ -154,18 +154,21 @@ def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local
     # WHILE STATEMENT
     elif node.value == "while":
         
+        while_count_copy = while_statement_count
+        while_statement_count += 1
+        
         # LOOP START (THIS WILL STILL CHECK THE CONDITION)
-        f.write("while" + str(while_statement_count) + ":\n")
+        f.write("while" + str(while_count_copy) + ":\n")
         
         # EVALUATE CONDITION
         eval_node(node.children[0], f, var_dict, sp_offset)
         
         # IF FALSE JUMP TO END WHILE
-        f.write("beq $a0 $zero endwhile" + str(while_statement_count) + "\n")
+        f.write("beq $a0 $zero endwhile" + str(while_count_copy) + "\n")
         
         # LOOP CODE
         start_sp_offset = sp_offset
-        
+
         traverse_function_nodes(node.children[1], f, var_dict, params_num)
         
         sp_offset = start_sp_offset
@@ -173,24 +176,26 @@ def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local
         # TODO FREE SP AFTER EACH ITERATION
         
         # JUMP TO START OF WHILE TO CHECK CONDITION AGAIN
-        f.write("b while" + str(while_statement_count) + "\n")
+        f.write("b while" + str(while_count_copy) + "\n")
         
         # WHILE ENDED
-        f.write("endwhile" + str(while_statement_count) + ":\n")
-        
-        while_statement_count += 1
+        f.write("endwhile" + str(while_count_copy) + ":\n")
     
     
     # IF STATEMENT
     elif node.value == "if":
         
+        if_count_copy = if_statement_count
+        if_statement_count += 1
+        
+        
         children_amount = len(node.children)
         jump_to_false   = ""
 
         if children_amount == 3:
-            jump_to_false = "false" + str(if_statement_count)
+            jump_to_false = "false" + str(if_count_copy)
         else:
-            jump_to_false = "endif" + str(if_statement_count)
+            jump_to_false = "endif" + str(if_count_copy)
 
         # EVALUATE CONDITION
         eval_node(node.children[0], f, var_dict, sp_offset)
@@ -202,21 +207,19 @@ def traverse_function_nodes(node, f, var_dict, params_num, isroot = False, local
         
         # TRUE PART
         traverse_function_nodes(node.children[1], f, var_dict, params_num)
-        f.write("j endif" + str(if_statement_count) + "\n")
+        f.write("j endif" + str(if_count_copy) + "\n")
 
         # Reset sp_offset
         sp_offset = start_sp_offset
         
         # ELSE PART
         if children_amount == 3:
-            f.write("false" + str(if_statement_count) + ":\n")
+            f.write("false" + str(if_count_copy) + ":\n")
             traverse_function_nodes(node.children[2], f, var_dict, params_num)
-        f.write("endif" + str(if_statement_count) + ":\n")
+        f.write("endif" + str(if_count_copy) + ":\n")
         
         # Reset sp_offset
         sp_offset = start_sp_offset
-        
-        if_statement_count += 1
     
     # RETURN VALUE
     elif node.value == "return":
